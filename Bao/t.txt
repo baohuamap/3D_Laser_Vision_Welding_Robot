@@ -1,0 +1,7 @@
+%YAML:1.0
+---
+K1: !!opencv-matrix
+   rows: 2
+   cols: 3
+   dt: d
+   data: [ 570., -102., 228., 100., 50., 250. ]

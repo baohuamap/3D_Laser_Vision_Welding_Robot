@@ -1,0 +1,28 @@
+Note
+
+*Python:
+	Cac bien thong dung:
+		ret -> global return value
+		tvec -> the translation (x,y,z) of the marker from the origin
+		rvec -> a 3D rotation vector which defines both an axis of rotation and the rotation angle about that axis, and gives the marker's orientation. It can be converted to a 3x3 rotation matrix using the Rodrigues function (cv::Rodrigues())
+
+
+*Camera params:
+	Suy ra ma trận thông số nội từ mô hình pinhole.
+	Ma trận chuyển đổi một điểm trong không gian thành một điểm trong hệ tọa độ ảnh cũng chính là ma trận chuyển đổi từ một điểm trong hệ tọa độ camera về hệ tọa độ ảnh.
+	Trường hợp hệ tọa độ vật không đặt trùng với hệ tọa độ camera. Khi đó ta sẽ cần 1 ma trận để chuyển đổi từ hệ tọa vật sang hệ tọa độ camera. 
+	Với T là ma trận biến đổi thuần nhất, đó cũng chính là ma trận thông số ngoại của camera. 
+	Khi đó ta có biểu thức chuyển đổi từ một điểm trong không gian thành một điểm trong hệ tọa độ ảnh là: 
+	hệ tọa độ ảnh = ma trận thông số nội * ma trận thông số ngoại * hệ tọa độ world
+
+*Hệ số méo:
+	Độ méo xuyên tâm (Radial distortion) - k1 k2 k3
+	Độ méo tiếp tuyến (Tangential distortion) - p1 p2
+	
+*Zhang
+	Ma trận thông số nội + ngoại
+	Hệ số méo
+	
+
+*Calib
+	
