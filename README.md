@@ -1,7 +1,7 @@
 # WeldingRobot
 All usage packages in project:
 
-python                    3.9
+python                    3.9 /n
 pypylon                   1.7.4
 opencv-contrib-python     4.5.5.64
 matplotlib                3.5.1
