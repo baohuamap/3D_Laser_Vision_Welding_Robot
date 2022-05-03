@@ -77,14 +77,60 @@ def robot_move_to_pos(command):
 	# b = time.clock()
 	# print(b-a)
 
+def read_pos_from_robot():
+	client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	client.settimeout(5)
+	
+	#Connect to the client/NX100 controller
+	client.connect((nx100Address, nx100tcpPort))
+
+	#START request
+	startRequest = "CONNECT Robot_access" + CRLF
+	client.send(startRequest.encode())
+	time.sleep(0.01)
+	response = client.recv(4096)      #4096: buffer size
+	startResponse = repr(response)
+	print(startResponse)
+	
+	if 'OK: NX Information Server' not in startResponse:
+		client.close()
+		print('[E] Command start request response to NX100 is not successful!')
+		return
+
+	#COMMAND request
+	command = "1,0"
+	commandLength = command_data_length(command)
+	commandRequest = "HOSTCTRL_REQUEST" + " " + "RPOSC" + " " + str(commandLength) + CRLF
+	client.send(commandRequest.encode())
+	time.sleep(0.01)
+	response = client.recv(4096)      #4096: buffer size
+	commandResponse = repr(response)
+	print(commandResponse)
+	
+	# if ('OK: ' + "MOVL" not in commandResponse):
+	# 	client.close()
+	# 	print('[E] Command request response to NX100 is not successful!')
+	# 	return
+	# else:
+		#COMMAND DATA request
+	commandDataRequest = command + (CR if len(command) > 0 else '')
+	client.send(commandDataRequest.encode())
+	time.sleep(0.01)
+	response = client.recv(4096)
+	commandDataResponse = repr(response)
+	# print(commandDataResponse)
+	if commandDataResponse:
+		client.close()
+	time.sleep(0.01)	
+
 def main():
-	a = read_pos_from_txt("D:\Code\Python_Code\WeldingRobot\RobotControl/trajectory.txt", 1)
-	robot_move_to_pos(a)
+	a = read_pos_from_txt("D:/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/RobotControl/trajectory.txt", 1)
+	# robot_move_to_pos(a)
 	# a = read_pos_from_txt("trajectory.txt", 2)
 	# robot_move_to_pos(a)
 	# a = read_pos_from_txt("trajectory.txt", 3)
 	# robot_move_to_pos(a)
-	print(a)
+	# print(a, type(a))
 	# b = read_pos_from_txt("trajectory.txt", 2)
 	# robot_move_to_pos(b)
 
