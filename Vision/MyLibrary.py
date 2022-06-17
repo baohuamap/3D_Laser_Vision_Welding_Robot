@@ -23,21 +23,24 @@ class vision():
         d  = 2.32748012e+02
         self.plane = [a,b,c,d]
         # adjust according to img
-		# self.rows = 2748
+        # self.rows = 2748
         # self.cols = 3840
         self.rows = 1208
         self.cols = 1928
+        # self.rows = 720
+        # self.cols = 1080
 
     def Preprocessing(self,img):
         newcameramtx, _ =cv.getOptimalNewCameraMatrix(self.intrinsic,self.dist_coffs,(self.rows,self.cols),1,(self.rows,self.cols))
         # undistort
         # img = cv.undistort(img, self.intrinsic, self.dist_coffs, None, newcameramtx)
-        blur = cv.GaussianBlur(img,(9,9),0)
+        grayimg = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        blur = cv.GaussianBlur(grayimg,(7,7),0)
         _, thresh = cv.threshold(blur,100,255,cv.THRESH_BINARY)
         closing = thresh
         del blur
         for _ in range(5):
-            closing = cv.morphologyEx(closing, cv.MORPH_CLOSE, np.ones((9,9),np.uint8))
+            closing = cv.morphologyEx(closing, cv.MORPH_CLOSE, np.ones((7,7),np.uint8))
         del thresh
         return closing
 
@@ -46,13 +49,13 @@ class vision():
         center = np.zeros((self.rows,self.cols))
     # find the center point
         for x in range(self.cols):
-            sum1=0.0
-            sum2=0.0
+            sum1 = 0.0
+            sum2 = 0.0
             roi = np.where(img[:,x] == 255)
             if roi[0].size != 0:
                 for y in roi[0]:
-                    sum1 = sum1 + y*img[y][x]
-                    sum2 = sum2 + img[y][x]
+                    sum1 += y * img[y][x]
+                    sum2 += img[y][x]
                 center[int(sum1/sum2)][x] = 255
         return center
 
@@ -105,8 +108,8 @@ class vision():
         feature1 = np.array([0, 0])
         feature2 = np.array([0, 0])
         roi = np.where(img.transpose() == 255)
-        for i in range(400, len(roi[0]) - 300, 1):
-            if roi[0][i+1] - roi[0][i] > 1:
+        for i in range(105, len(roi[0]), 1):
+            if roi[0][i+1] > roi[0][i] :
                 feature1[0] = roi[0][i]
                 feature1[1] = roi[1][i]
                 feature2[0] = roi[0][i+1]
