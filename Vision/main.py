@@ -6,157 +6,262 @@ import threading
 import time, sys
 import serial
 from math import log
+import socket
+
+CR = "\r"
+CRLF = "\r\n"
 
 class RobotTask(threading.Thread):
     def __init__(self):
         global CurrentPos
         threading.Thread.__init__(self)
-        self.con = serial.Serial(
-        port = 'COM4',\
-        baudrate=19200,\
-        parity=serial.PARITY_NONE,\
-        stopbits=serial.STOPBITS_ONE,\
-        bytesize=serial.EIGHTBITS,\
-            timeout=0)
-        CurrentPos = self.RposC()
-        time.sleep(3)
-    def __bbc(self,input):
-        sum = 0
-        while input != 0:
-            char = input%0x100
-            sum = sum +char
-            input = input//0x100
-            result = (sum - 0x01)//0x100 + (sum - 0x01)%0x100*0x100
-        return result
+        self.ip_address = '169.254.3.45'
+        self.port = 80
+        CurrentPos = []
+        self.stop = False
 
-    def __SplitData(self, received):
-        string = []
-        pos = np.zeros(6)
-        while received != 0:
-            char = received%0x100
-            received = received//0x100
-            string.insert(0, char - 48)         # convert ascii to number
-        end = string.index(-46) + 1
-        for k in range(6):
-            string = string[end:-1]
-            end = string.index(-4) + 1
-            element = string[0: end - 1] 
-            if -3 not in element:
-                sign = 1
-            else:
-                sign = -1
-                element.remove(-3)
-            dot = element.index(-2)
-            element.remove(-2)
-            number = 0
-            for i in range(len(element)):
-                number = number + sign * element[i] * 10**(dot - i - 1)
-            pos[k] = number
-        return pos
-    def __ReadUntil(self, bytes):
-        line = bytearray()
-        c = b'\x00'
-        while c.find(bytes) == -1:
-            c = self.con.readline()
-            if c:
-                line = line + c
-        time.sleep(0.02)
-        return line
+    def utf8len(self,inputString):
+        return len(inputString.encode('utf-8'))
+
+    def command_data_length(self, command):
+        if len(command) == 0:
+            return 0
+        else:
+            return self.utf8len(command + CR)
+
+    def read_pos_from_txt(self, pos):
+        trajectory = open(self.trajectory_path, "r")
+        for i, line in enumerate(trajectory):
+            if i == pos - 1:
+                command = line.rstrip()
+        self.CurrentPos = np.fromstring(command, dtype=float, sep=',')
+        return command
+    
+    def robot_move_to_pos(self, command): # use MOVJ command to move the robot
+        #Comm setup
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.settimeout(5)
+        #Connect to the client/NX100 controller
+        client.connect((self.ip_address, self.port))
+        #START request
+        startRequest = "CONNECT Robot_access" + CRLF
+        client.send(startRequest.encode())
+        time.sleep(0.01)
+        response = client.recv(4096)      #4096: buffer size
+        startResponse = repr(response)
+        print(startResponse)
+        if 'OK: NX Information Server' not in startResponse:
+            client.close()
+            print('[E] Command start request response to NX100 is not successful!')
+            return
+        #COMMAND request
+        commandLength = self.command_data_length(command)
+        commandRequest = "HOSTCTRL_REQUEST" + " " + "MOVJ" + " " + str(commandLength) + CRLF
+        client.send(commandRequest.encode())
+        time.sleep(0.01)
+        response = client.recv(4096)      #4096: buffer size
+        commandResponse = repr(response)
+        print(commandResponse)
+        if ('OK: ' + "MOVJ" not in commandResponse):
+            client.close()
+            print('[E] Command request response to NX100 is not successful!')
+            return
+        else:
+            #COMMAND DATA request
+            commandDataRequest = command + (CR if len(command) > 0 else '')
+            client.send(commandDataRequest.encode())
+            time.sleep(0.01)
+            response = client.recv(4096)
+            commandDataResponse = repr(response)
+            # print(commandDataResponse)
+            if commandDataResponse:
+                #Close socket
+                client.close()
+        time.sleep(0.01)
+
+    def read_pos_from_robot(self):
+        #Comm setup
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.settimeout(5)
+        #Connect to the client/NX100 controller
+        client.connect((self.ip_address, self.port))
+        #START request
+        startRequest = "CONNECT Robot_access" + CRLF
+        client.send(startRequest.encode())
+        time.sleep(0.01)
+        response = client.recv(4096)      #4096: buffer size
+        startResponse = repr(response)
+        print(startResponse)
+        if 'OK: NX Information Server' not in startResponse:
+            client.close()
+            print('[E] Command start request response to NX100 is not successful!')
+            return
+        #COMMAND request
+        commandLength = self.command_data_length("")
+        commandRequest = "HOSTCTRL_REQUEST" + " " + "RposC" + " " + str(commandLength) + CRLF
+        client.send(commandRequest.encode())
+        time.sleep(0.01)
+        response = client.recv(4096)      #4096: buffer size
+        commandResponse = repr(response)
+        print(commandResponse)
+        if ('OK: ' + "RposC" not in commandResponse):
+            client.close()
+            print('[E] Command request response to NX100 is not successful!')
+            return
+        else:
+            #COMMAND DATA request
+            commandDataRequest = ""
+            client.send(commandDataRequest.encode())
+            time.sleep(0.01)
+            response = client.recv(4096)
+            commandDataResponse = repr(response)
+            # print(commandDataResponse)
+            if commandDataResponse:
+                #Close socket
+                client.close()
+        time.sleep(0.01)
+        return commandDataResponse
+
+        
+    # def __bbc(self,input):
+    #     sum = 0
+    #     while input != 0:
+    #         char = input%0x100
+    #         sum = sum +char
+    #         input = input//0x100
+    #         result = (sum - 0x01)//0x100 + (sum - 0x01)%0x100*0x100
+    #     return result
+
+    # def __SplitData(self, received):
+    #     string = []
+    #     pos = np.zeros(6)
+    #     while received != 0:
+    #         char = received%0x100
+    #         received = received//0x100
+    #         string.insert(0, char - 48)         # convert ascii to number
+    #     end = string.index(-46) + 1
+    #     for k in range(6):
+    #         string = string[end:-1]
+    #         end = string.index(-4) + 1
+    #         element = string[0: end - 1] 
+    #         if -3 not in element:
+    #             sign = 1
+    #         else:
+    #             sign = -1
+    #             element.remove(-3)
+    #         dot = element.index(-2)
+    #         element.remove(-2)
+    #         number = 0
+    #         for i in range(len(element)):
+    #             number = number + sign * element[i] * 10**(dot - i - 1)
+    #         pos[k] = number
+    #     return pos
+
+    # def __ReadUntil(self, bytes):
+    #     line = bytearray()
+    #     c = b'\x00'
+    #     while c.find(bytes) == -1:
+    #         c = self.con.readline()
+    #         if c:
+    #             line = line + c
+    #     time.sleep(0.02)
+    #     return line
       
-    def RposC(self):
-        self.con.write(b'\x05')
-        received = 0
-        while received != 4:
-            while self.con.inWaiting():
-                received = int.from_bytes(self.con.readline(), byteorder='big', signed=False)
-                if received == 4144:
-                    self.con.write(b'\x0101,000\x02RPOSC 1, 0\x0D\x03\x83\x03'), # recieved ACK0 -> send RPOSC command
-                elif received == 4145:
-                    self.con.write(b'\x04')
-                elif received == 5:   # received EQN
-                    self.con.write(b'\x100')    #send ACK0
-                    data = int.from_bytes(self.__ReadUntil(b'\x03'), byteorder='big', signed=False)
-                    result = self.__SplitData(data)
-                    self.con.write(b'\x101')    #send ACK1
-        time.sleep(0.02)
-        return np.round(result,3)
+    # def RposC(self):
+    #     self.con.write(b'\x05')
+    #     received = 0
+    #     while received != 4:
+    #         while self.con.inWaiting():
+    #             received = int.from_bytes(self.con.readline(), byteorder='big', signed=False)
+    #             if received == 4144:
+    #                 self.con.write(b'\x0101,000\x02RPOSC 1, 0\x0D\x03\x83\x03'), # recieved ACK0 -> send RPOSC command
+    #             elif received == 4145:
+    #                 self.con.write(b'\x04')
+    #             elif received == 5:   # received EQN
+    #                 self.con.write(b'\x100')    #send ACK0
+    #                 data = int.from_bytes(self.__ReadUntil(b'\x03'), byteorder='big', signed=False)
+    #                 result = self.__SplitData(data)
+    #                 self.con.write(b'\x101')    #send ACK1
+    #     time.sleep(0.02)
+    #     return np.round(result,3)
 
-    def __CombineData(self,position):
-        input = str(position[0]) + ', ' + str(position[1]) + ', ' + str(position[2]) + ', ' + str(position[3]) + ', ' + str(position[4]) + ', ' + str(position[5])
-        out = 0x0130312C303030024d4f564c20302c2032302c20312c20
-        for i in range(len(input)):
-            out = out * 0x100 + ord(input[i])
-        for _ in range(8):
-            out = out * 0x1000000 + 0x2C2030
-        out = out * 0x100 + 0x0D03
-        return out
+    # def __CombineData(self,position):
+    #     input = str(position[0]) + ', ' + str(position[1]) + ', ' + str(position[2]) + ', ' + str(position[3]) + ', ' + str(position[4]) + ', ' + str(position[5])
+    #     out = 0x0130312C303030024d4f564c20302c2032302c20312c20
+    #     for i in range(len(input)):
+    #         out = out * 0x100 + ord(input[i])
+    #     for _ in range(8):
+    #         out = out * 0x1000000 + 0x2C2030
+    #     out = out * 0x100 + 0x0D03
+    #     return out
 
-    def __bytes_needed(self,number): 
-        return int(log(number, 256)) + 1
+    # def __bytes_needed(self,number): 
+    #     return int(log(number, 256)) + 1
 
-    def hold(self, data):
-        self.con.write(b'\x05')
-        received = 0
-        while received != 4:
-            while self.con.inWaiting():
-                received = int.from_bytes(self.con.readline(), byteorder='big', signed=False)
-                if received == 4144 and data == 1:
-                    self.con.write(b'\x01\x30\x31\x2C\x30\x30\x30\x02\x48\x4f\x4c\x44\x20\x31\x0D\x03\xA7\x02')
-                if received == 4144 and data == 0:
-                    self.con.write(b'\x01\x30\x31\x2C\x30\x30\x30\x02\x48\x4f\x4c\x44\x20\x30\x0D\x03\xA6\x02')
-                elif received == 4145:
-                    self.con.write(b'\x04')
-                elif received == 5:   # received EQN
-                    self.con.write(b'\x100')    #send ACK0
-                    _ = int.from_bytes(self.__ReadUntil(b'\x03'), byteorder='big', signed=False)
-                    self.con.write(b'\x101')    #send ACK1
-    def movL(self,position):
-        global ImgArr, NowPos,CurrImg, CurrentPos
-        self.con.write(b'\x05')
-        received = 0
-        distance = 20
-        NowPos.append(CurrentPos)
-        ImgArr.append(CurrImg)
-        while distance > 8:
-            while self.con.inWaiting():
-                received = int.from_bytes(self.con.readline(), byteorder='big', signed=False)
-                if received == 4144:
-                    command = self.__CombineData(position)
-                    command = command * 0x10000 + self.__bbc(command)
-                    self.con.write(command.to_bytes(self.__bytes_needed(command), 'big'))
-                elif received == 4145:
-                    self.con.write(b'\x04')
-                elif received == 5:   # received EQN
-                    time.sleep(0.02)
-                    self.con.write(b'\x100')    #send ACK0
-                    _ = int.from_bytes(self.__ReadUntil(b'\x03'), byteorder='big', signed=False)
-                    time.sleep(0.02)
-                    self.con.write(b'\x101')    #send ACK1
-                elif received == 4:
-                    while distance > 8:
-                        time.sleep(0.02)
-                        CurrentPos = self.RposC()
-                        distance = np.linalg.norm(position[0:3] - CurrentPos[0:3])
+    # def hold(self, data):
+    #     self.con.write(b'\x05')
+    #     received = 0
+    #     while received != 4:
+    #         while self.con.inWaiting():
+    #             received = int.from_bytes(self.con.readline(), byteorder='big', signed=False)
+    #             if received == 4144 and data == 1:
+    #                 self.con.write(b'\x01\x30\x31\x2C\x30\x30\x30\x02\x48\x4f\x4c\x44\x20\x31\x0D\x03\xA7\x02')
+    #             if received == 4144 and data == 0:
+    #                 self.con.write(b'\x01\x30\x31\x2C\x30\x30\x30\x02\x48\x4f\x4c\x44\x20\x30\x0D\x03\xA6\x02')
+    #             elif received == 4145:
+    #                 self.con.write(b'\x04')
+    #             elif received == 5:   # received EQN
+    #                 self.con.write(b'\x100')    #send ACK0
+    #                 _ = int.from_bytes(self.__ReadUntil(b'\x03'), byteorder='big', signed=False)
+    #                 self.con.write(b'\x101')    #send ACK1
 
-    def run(self):
-        global StartWelding,WeldPoint,CurrentPos
-        while True:
-            try:
-                if StartWelding:
-                    command = np.concatenate((WeldPoint[0], CurrentPos[3:6]), 0)
-                    del WeldPoint[0]
-                    self.movL(command)
-                else:
-                    CurrentPos[1] = CurrentPos[1] - 12
-                    command = CurrentPos
-                    self.movL(command)
-                    if CurrentPos[1] < -1445:
-                        self.con.close()
-                        print("weld done")
-            except:
-                print("Robot error: ", sys.exc_info())
-            finally:
-                pass
+    # def movL(self,position):
+    #     global ImgArr, NowPos,CurrImg, CurrentPos
+    #     self.con.write(b'\x05')
+    #     received = 0
+    #     distance = 20
+    #     NowPos.append(CurrentPos)
+    #     ImgArr.append(CurrImg)
+    #     while distance > 8:
+    #         while self.con.inWaiting():
+    #             received = int.from_bytes(self.con.readline(), byteorder='big', signed=False)
+    #             if received == 4144:
+    #                 command = self.__CombineData(position)
+    #                 command = command * 0x10000 + self.__bbc(command)
+    #                 self.con.write(command.to_bytes(self.__bytes_needed(command), 'big'))
+    #             elif received == 4145:
+    #                 self.con.write(b'\x04')
+    #             elif received == 5:   # received EQN
+    #                 time.sleep(0.02)
+    #                 self.con.write(b'\x100')    #send ACK0
+    #                 _ = int.from_bytes(self.__ReadUntil(b'\x03'), byteorder='big', signed=False)
+    #                 time.sleep(0.02)
+    #                 self.con.write(b'\x101')    #send ACK1
+    #             elif received == 4:
+    #                 while distance > 8:
+    #                     time.sleep(0.02)
+    #                     CurrentPos = self.RposC()
+    #                     distance = np.linalg.norm(position[0:3] - CurrentPos[0:3])
+
+    # def run(self):
+    #     global StartWelding,WeldPoint,CurrentPos
+    #     while True:
+    #         try:
+    #             if StartWelding:
+    #                 command = np.concatenate((WeldPoint[0], CurrentPos[3:6]), 0)
+    #                 del WeldPoint[0]
+    #                 self.movL(command)
+    #             else:
+    #                 CurrentPos[1] = CurrentPos[1] - 12
+    #                 command = CurrentPos
+    #                 self.movL(command)
+    #                 if CurrentPos[1] < -1445:
+    #                     self.con.close()
+    #                     print("weld done")
+    #         except:
+    #             print("Robot error: ", sys.exc_info())
+    #         finally:
+    #             pass
   
 class CameraTask(threading.Thread):
     def __init__(self):
@@ -182,7 +287,6 @@ class CameraTask(threading.Thread):
             except:
                 print("Camera error: ",sys.exc_info())
     
-
 class SoftwareTask(threading.Thread):
    def __init__(self):
       threading.Thread.__init__(self)
