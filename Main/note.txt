@@ -1,0 +1,2 @@
+** note:
+Check DX100 controller IP and port ?

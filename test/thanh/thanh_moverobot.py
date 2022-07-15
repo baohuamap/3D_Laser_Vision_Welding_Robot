@@ -39,6 +39,7 @@ class BaslerCam():
             cam.Attach(self._tlFactory.CreateDevice(self._devices[i]))
             # Print the model name of the camera.
             print("Using device ", cam.GetDeviceInfo().GetModelName())
+            
     def grabImg(self):
         self.cameras.Open()
         self.cameras.StartGrabbing()

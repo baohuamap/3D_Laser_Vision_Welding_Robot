@@ -53,6 +53,7 @@ class RobotTask(threading.Thread):
                 number = number + sign * element[i] * 10**(dot - i - 1)
             pos[k] = number
         return pos
+
     def __ReadUntil(self, bytes):
         line = bytearray()
         c = b'\x00'
@@ -110,6 +111,7 @@ class RobotTask(threading.Thread):
                     self.con.write(b'\x100')    #send ACK0
                     _ = int.from_bytes(self.__ReadUntil(b'\x03'), byteorder='big', signed=False)
                     self.con.write(b'\x101')    #send ACK1
+                    
     def movL(self,position):
         global ImgArr, NowPos,CurrImg, CurrentPos
         self.con.write(b'\x05')

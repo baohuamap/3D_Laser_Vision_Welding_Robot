@@ -54,6 +54,7 @@ class RobotTask(threading.Thread):
             client.close()
             print('[E] Command start request response to NX100 is not successful!')
             return
+
         #COMMAND request
         commandLength = self.command_data_length(command)
         commandRequest = "HOSTCTRL_REQUEST" + " " + "MOVJ" + " " + str(commandLength) + CRLF
@@ -61,7 +62,8 @@ class RobotTask(threading.Thread):
         time.sleep(0.01)
         response = client.recv(4096)      #4096: buffer size
         commandResponse = repr(response)
-        print(commandResponse)
+        # print(commandResponse)
+        
         if ('OK: ' + "MOVJ" not in commandResponse):
             client.close()
             print('[E] Command request response to NX100 is not successful!')
@@ -97,20 +99,20 @@ class RobotTask(threading.Thread):
             print('[E] Command start request response to NX100 is not successful!')
             return
         #COMMAND request
-        commandLength = self.command_data_length("")
-        commandRequest = "HOSTCTRL_REQUEST" + " " + "RposC" + " " + str(commandLength) + CRLF
+        commandLength = self.command_data_length("1, 0")
+        commandRequest = "HOSTCTRL_REQUEST" + " " + "RPOSC" + " " + str(commandLength) + CRLF
         client.send(commandRequest.encode())
         time.sleep(0.01)
         response = client.recv(4096)      #4096: buffer size
         commandResponse = repr(response)
         print(commandResponse)
-        if ('OK: ' + "RposC" not in commandResponse):
+        if ('OK: ' + "RPOSC" not in commandResponse):
             client.close()
             print('[E] Command request response to NX100 is not successful!')
             return
         else:
             #COMMAND DATA request
-            commandDataRequest = ""
+            commandDataRequest = "1, 0"
             client.send(commandDataRequest.encode())
             time.sleep(0.01)
             response = client.recv(4096)
@@ -376,18 +378,18 @@ class SoftwareTask(threading.Thread):
             # finally:
             #     print("leng:", len(NowPos), len(ImgArr))
 
-# Create new threads
-ImgArr = []
-StartWelding = False
-NowPos = []
-WeldPoint = []
-# CurrImg = 0
-# CurrentPos = np.array([0,0,0,0,0,0])
+# # Create new threads
+# ImgArr = []
+# StartWelding = False
+# NowPos = []
+# WeldPoint = []
+# # CurrImg = 0
+# # CurrentPos = np.array([0,0,0,0,0,0])
 
-thread1 = CameraTask()
-thread2 = RobotTask()
-thread3 = SoftwareTask()
-# Start new Threads
-thread1.start()
-thread2.start()
-thread3.start()
+# thread1 = CameraTask()
+# thread2 = RobotTask()
+# thread3 = SoftwareTask()
+# # Start new Threads
+# thread1.start()
+# thread2.start()
+# thread3.start()
