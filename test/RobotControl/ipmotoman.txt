@@ -1,6 +1,26 @@
+Pass NX100
+1964.2.6
+
+Pass DX100
+61.11.12
+
+NX100 
 ip: 169.254.3.45
 subnet: 255.255.0.0
 pc host: 169.254.3.3
+
+DX100
+ip: 192.168.255.1
+subnet: 255.255.255.0
+
+PC
+ip: 192.168.255.2
+subnet: 255.255.255.0
+
+Camera
+ip: 192.168.255.3
+subnet: 255.255.255.0
+
 CONNECT Robot_access
 HOSTCTRL_REQUEST RSTATS 0
 CONNECT Robot_access Keep-Alive:2

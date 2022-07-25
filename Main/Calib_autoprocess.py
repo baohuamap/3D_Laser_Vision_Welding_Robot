@@ -13,7 +13,6 @@ Code for automated calibration of the camera:
 
 
 import os
-from pickle import TRUE
 import numpy as np
 import cv2 as cv
 from pypylon import pylon
@@ -27,8 +26,8 @@ import glob
 import socket
 
 # Params for NX100 controller **
-nx100Address = "169.254.3.45"
-nx100tcpPort = 80
+DX100Address = "192.168.255.2"
+DX100tcpPort = 80
 CR = "\r"
 CRLF = "\r\n"
 
@@ -106,7 +105,7 @@ class RobotTask():
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.settimeout(5)
         #Connect to the client/NX100 controller
-        client.connect((nx100Address, nx100tcpPort))
+        client.connect((DX100Address, DX100tcpPort))
         #START request
         startRequest = "CONNECT Robot_access" + CRLF
         client.send(startRequest.encode())
@@ -114,9 +113,9 @@ class RobotTask():
         response = client.recv(4096)      #4096: buffer size
         startResponse = repr(response)
         print(startResponse)
-        if 'OK: NX Information Server' not in startResponse:
+        if 'OK: DX Information Server' not in startResponse:
             client.close()
-            print('[E] Command start request response to NX100 is not successful!')
+            print('[E] Command start request response to DX100 is not successful!')
             return
         #COMMAND request
         commandLength = self.command_data_length(command)
@@ -261,6 +260,6 @@ if __name__ == "__main__":
             cv.imwrite(filename, img)
             print('Captured checkerboard image\nPair %d ' %(check_count))
         elif choice & 0xFF == ord("q"):
-            VisionSystem.stop()
+            # VisionSystem.stop()
             Robot.stop()
             break

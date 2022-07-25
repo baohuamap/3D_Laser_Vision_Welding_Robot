@@ -33,15 +33,15 @@ def read_positions():
 	return positions
 
 def write_postion_txt(pos, f):
-	command = "0" + 
+	# command = "0" + 
 	pass
 
-def write_positions_txt(positions):
-	total = len(positions)
-	for i in range(int(total)):
+# def write_positions_txt(positions):
+# 	total = len(positions)
+# 	for i in range(int(total)):
 		
 	# with open("data.txt", "w") as f:
 		# f.write()
 		
 		# write_videos_txt(playlist.videos, f)
-	pass
+	# pass

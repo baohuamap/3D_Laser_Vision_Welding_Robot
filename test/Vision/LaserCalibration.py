@@ -15,8 +15,8 @@ def ChessPlane(variable, position, rotation, planeNo):
 
     x = np.linspace(-200,200,10)
     y = np.linspace(-200,200,10)
-    X,Y = np.meshgrid(x,y)					
-    Z= - a/c*X - b/c*Y + d/c
+    X, Y = np.meshgrid(x,y)
+    Z = - a/c*X - b/c*Y + d/c
     return variable.plot_surface(X, Y, Z, color = planeNo, alpha=0.3)
 
 def coordinate(variable, position, rotation, coordinateNo):
@@ -26,18 +26,21 @@ def coordinate(variable, position, rotation, coordinateNo):
     uvecx = rotation[0][0]
     vvecx = rotation[1][0]
     wvecx = rotation[2][0]
+
     xvecy = position[0][0]
     yvecy = position[1][0]
     zvecy = position[2][0]
     uvecy = rotation[0][1]
     vvecy = rotation[1][1]
     wvecy = rotation[2][1]
+
     xvecz = position[0][0]
     yvecz = position[1][0]
     zvecz = position[2][0]
     uvecz = rotation[0][2]
     vvecz = rotation[1][2]
     wvecz = rotation[2][2]
+    
     return variable.quiver(xvecx, yvecx, zvecx, uvecx, vvecx, wvecx
     ,color = 'r', length=100, normalize=True),variable.quiver(xvecy, yvecy, zvecy, uvecy, vvecy, wvecy,
      length=100,color = 'g', normalize=True),variable.quiver(xvecz, yvecz, zvecz, uvecz, vvecz, wvecz,
