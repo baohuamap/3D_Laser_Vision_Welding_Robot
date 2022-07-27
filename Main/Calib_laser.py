@@ -11,7 +11,7 @@ vis = vision()
 objp = vis.CalibParams()
 criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 intrinsic = vis.intrinsic
-dist_coffs = vis.dist_coffs 
+dist_coffs = vis.dist_coffs
 fx = intrinsic[0][0]
 fy = intrinsic[1][1]
 cx = intrinsic[0][2]
@@ -86,7 +86,8 @@ def LaserPosition(chessPath,LaserPath):
 
     # Adaptive center extraction
     thinned = cv.ximgproc.thinning(laser)
-    line = vis.LaserCenter(thinned)
+    # Laser center extraction - can change function depends on the laser type
+    line = vis.LaserCenter(thinned)     
     inv = np.linalg.inv(rotation_matrix1)
     for i in range(rows):
         for j in range(300,cols-300,1):
@@ -109,9 +110,11 @@ def LaserPosition(chessPath,LaserPath):
     cv.imshow("undistorted chess, laser preprocessing",result2)
     cv.waitKey(0)
     cv.destroyAllWindows()
+    return tvec1, rotation_matrix1
 
-LaserPosition("D:\Code\Python_Code\WeldingRobot\VisionVer11\Mycamera/LaserCalibration/chess8.png",
-              "D:\Code\Python_Code\WeldingRobot\VisionVer11\Mycamera/LaserCalibration/laser8.png")
+tvec1, rotation_matrix1 = LaserPosition(
+    "D:\Code\Python_Code\WeldingRobot\VisionVer11\Mycamera/LaserCalibration/chess8.png",
+    "D:\Code\Python_Code\WeldingRobot\VisionVer11\Mycamera/LaserCalibration/laser8.png")
 
 # Least Square Error Plane Fitting__________________________________________________
 x_square = 0
@@ -149,54 +152,54 @@ del yz
 del z
 
 # plot point in laser plane________________________________________
-# X = np.array([0])
-# Y = np.array([0])
-# Z = np.array([0])
+X = np.array([0])
+Y = np.array([0])
+Z = np.array([0])
 
-# for i in range(len(pointinlaserplane)):
-#     X = np.insert(X, i, pointinlaserplane[i][0][0])
-#     Y = np.insert(Y, i, pointinlaserplane[i][1][0])
-#     Z = np.insert(Z, i, pointinlaserplane[i][2][0])
+for i in range(len(pointinlaserplane)):
+    X = np.insert(X, i, pointinlaserplane[i][0][0])
+    Y = np.insert(Y, i, pointinlaserplane[i][1][0])
+    Z = np.insert(Z, i, pointinlaserplane[i][2][0])
 
-# fig = plt.figure()
-# ax = fig.add_subplot(111, projection="3d")
-# ax.scatter(X, Y, Z, c='r' , marker = '.')
-# ax.set_xlabel('x')
-# ax.set_ylabel('y')
-# ax.set_zlabel('z')
-# del X
-# del Y
-# del Z
+fig = plt.figure()
+ax = fig.add_subplot(111, projection="3d")
+ax.scatter(X, Y, Z, c='r' , marker = '.')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+del X
+del Y
+del Z
 
 # # plot laser plane_________________________________________________
-# x = np.linspace(-100,100,10)
-# y = np.linspace(-100,100,10)
-# X,Y = np.meshgrid(x,y)
-# Z=plane[0][0]*X + plane[1][0]*Y + plane[2][0]
-# surf = ax.plot_surface( X, Y, Z, rstride=5, cstride=5, color='r', alpha=0.3)
-# x = np.array([0,0,0])
-# y = np.array([0,0,0])
-# z = np.array([0,0,0])
-# u = np.array([1,0,0])  
-# v = np.array([0,1,0])
-# w = np.array([0,0,1])
+x = np.linspace(-100,100,10)
+y = np.linspace(-100,100,10)
+X,Y = np.meshgrid(x,y)
+Z=plane[0][0]*X + plane[1][0]*Y + plane[2][0]
+surf = ax.plot_surface( X, Y, Z, rstride=5, cstride=5, color='r', alpha=0.3)
+x = np.array([0,0,0])
+y = np.array([0,0,0])
+z = np.array([0,0,0])
+u = np.array([1,0,0])  
+v = np.array([0,1,0])
+w = np.array([0,0,1])
 
-# # ax.quiver(x, y, z, u, v, w, length=50, normalize=True)
-# # ChessPlane(ax,tvec1,rotation_matrix1, 'c')
-# # coordinate(ax,tvec1,rotation_matrix1, 'O1')
-# # ChessPlane(ax,tvec2,rotation_matrix2, 'm')
-# # coordinate(ax,tvec2,rotation_matrix2, 'O2')
-# # ChessPlane(ax,tvec3,rotation_matrix3, 'y')
-# # coordinate(ax,tvec3,rotation_matrix3, 'O3')
-# # ChessPlane(ax,tvec4,rotation_matrix4, 'g')
-# # coordinate(ax,tvec4,rotation_matrix4, 'O3')
-# # ChessPlane(ax,tvec5,rotation_matrix5, 'b')
-# # coordinate(ax,tvec5,rotation_matrix5, 'O3')
+ax.quiver(x, y, z, u, v, w, length=50, normalize=True)
+ChessPlane(ax,tvec1,rotation_matrix1, 'c')
+coordinate(ax,tvec1,rotation_matrix1, 'O1')
+# ChessPlane(ax,tvec2,rotation_matrix2, 'm')
+# coordinate(ax,tvec2,rotation_matrix2, 'O2')
+# ChessPlane(ax,tvec3,rotation_matrix3, 'y')
+# coordinate(ax,tvec3,rotation_matrix3, 'O3')
+# ChessPlane(ax,tvec4,rotation_matrix4, 'g')
+# coordinate(ax,tvec4,rotation_matrix4, 'O3')
+# ChessPlane(ax,tvec5,rotation_matrix5, 'b')
+# coordinate(ax,tvec5,rotation_matrix5, 'O3')
 
-# ax.text(50 , 0, 0 ,'X', fontsize=10)
-# ax.text(0 , 50, 0 ,'Y', fontsize=10)
-# ax.text(0 , 0, 50,'Z', fontsize=10)
-# ax.set_xlim3d(-300,300)
-# ax.set_ylim3d(-300,300)
-# ax.set_zlim3d(1500,2100)
-# plt.show()
+ax.text(50 , 0, 0 ,'X', fontsize=10)
+ax.text(0 , 50, 0 ,'Y', fontsize=10)
+ax.text(0 , 0, 50,'Z', fontsize=10)
+ax.set_xlim3d(-300,300)
+ax.set_ylim3d(-300,300)
+ax.set_zlim3d(1500,2100)
+plt.show()

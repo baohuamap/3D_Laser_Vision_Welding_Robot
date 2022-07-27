@@ -11,6 +11,10 @@ from GlobalVariables import *
 from matplotlib import pyplot as plt
 import time
 
+# global variables
+R_path = R_path
+t_path = t_path
+
 def coordinate(variable, position, rotation, coordinateNo):
     xvecx = position[0][0]
     yvecx = position[1][0]
@@ -97,8 +101,8 @@ def load_pos(path):
 
 def handeyeCalibrate():
     check_path = checkerboard_calib_cam_path
-    R_gripper2base = load_pos('R.txt')
-    t_gripper2base = load_pos('t.txt')
+    R_gripper2base = load_pos(R_path)
+    t_gripper2base = load_pos(t_path)
 
     # n1 = int(input('Number start: '))
     # n2 = int(input('Number end: '))

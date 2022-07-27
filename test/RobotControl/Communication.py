@@ -1,12 +1,13 @@
 import socket
 import time
+import numpy as np
 # from cv2 import line
 
 # from setuptools import Command
 # import threading
 # import codecs
 
-# Params for NX100 controller
+# Params for DX100 controller
 Dx100Address = "192.168.255.2"
 Dx100Port    = 80
 CR = "\r"
@@ -33,7 +34,7 @@ def robot_move_to_pos(command):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.settimeout(5)
     
-    #Connect to the client/NX100 controller
+    #Connect to the client/DX100 controller
     client.connect((Dx100Address, Dx100Port))
 
     #START request
@@ -60,7 +61,7 @@ def robot_move_to_pos(command):
     
     if ('OK: ' + "MOVJ" not in commandResponse):
         client.close()
-        print('[E] Command request response to NX100 is not successful!')
+        print('[E] Command request response to DX100 is not successful!')
         return
     else:
         #COMMAND DATA request
@@ -69,7 +70,7 @@ def robot_move_to_pos(command):
         time.sleep(0.01)
         response = client.recv(4096)
         commandDataResponse = repr(response)
-        # print(commandDataResponse)
+        print(commandDataResponse)
         if commandDataResponse:
             #Close socket
             client.close()
@@ -81,7 +82,7 @@ def read_pos_from_robot():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.settimeout(5)
     
-    #Connect to the client/NX100 controller
+    #Connect to the client/DX100 controller
     client.connect((Dx100Address, Dx100Port))
 
     #START request
@@ -106,31 +107,38 @@ def read_pos_from_robot():
     response = client.recv(4096)      #4096: buffer size
     commandResponse = repr(response)
     print(commandResponse)
-    commandDataRequest = command + (CR if len(command) > 0 else '')
-    client.send(commandDataRequest.encode())
-    time.sleep(0.01)
-    response = client.recv(4096)
-    commandDataResponse = repr(response)
-    # print(commandDataResponse)
-    if commandDataResponse:
+    if ('OK: ' + "RPOSC" not in commandResponse):
         client.close()
-    time.sleep(0.01)	
+        print('[E] Command request response to DX100 is not successful!')
+        return
+    else:
+        commandDataRequest = command + CR
+        client.send(commandDataRequest.encode())
+        time.sleep(0.01)
+        response = client.recv(4096)
+        commandDataResponse = repr(response)
+        print(commandDataResponse)
+        if commandDataResponse:
+            client.close()
+        time.sleep(0.01)
+    return commandDataResponse
 
 def main():
     a = read_pos_from_txt("D:/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/test/RobotControl/trajectory.txt", 1)
     robot_move_to_pos(a)
     time.sleep(2)	
     b = read_pos_from_robot()
-    print(b)
-    a = read_pos_from_txt("D:/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/test/RobotControl/trajectory.txt", 2)
-    robot_move_to_pos(a)
-    time.sleep(2)	
-    b = read_pos_from_robot()
-    print(b)
-    # a = read_pos_from_txt("trajectory.txt", 3)
+    c = b[2:50]
+    d = np.fromstring(c, dtype = float, sep=',')
+    print(d)
+    # a = read_pos_from_txt("D:/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/test/RobotControl/trajectory.txt", 2)
     # robot_move_to_pos(a)
-    # print(a, type(a))
-    # b = read_pos_from_txt("trajectory.txt", 2)
+    # time.sleep(2)	
+    # read_pos_from_robot()
+    # a = read_pos_from_txt("D:/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/test/RobotControl/trajectory.txt", 3)
+    # robot_move_to_pos(a)
+    # # print(a, type(a))
+    # b = read_pos_from_txt("D:/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/test/RobotControl/trajectory.txt", 4)
     # robot_move_to_pos(b)
 
 main()

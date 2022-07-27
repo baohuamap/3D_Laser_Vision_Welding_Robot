@@ -31,9 +31,12 @@ DX100tcpPort = 80
 CR = "\r"
 CRLF = "\r\n"
 
+# global variables
 check_path = checkerboard_calib_cam_path
 robot_path = calib_trajectory           # Open when calibrating
-# robot_path = scan_trajectory            # Open when scanning
+R_path = R_path
+t_path = t_path
+
 
 class BaslerCam():
     def __init__(self,key):
@@ -97,7 +100,7 @@ class RobotTask():
         for i, line in enumerate(trajectory):
             if i == pos - 1:
                 command = line.rstrip()
-        self.CurrentPos = np.fromstring(command, dtype = float, sep=',')
+        # self.CurrentPos = np.fromstring(command, dtype = float, sep=',')
         return command
 
     def robot_move_to_pos(self, command):
@@ -142,17 +145,63 @@ class RobotTask():
                 client.close()
         time.sleep(0.01)
 
+    def read_pos_from_robot(self):
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.settimeout(5)
+        
+        #Connect to the client/DX100 controller
+        client.connect((DX100Address, DX100tcpPort))
+
+        #START request
+        startRequest = "CONNECT Robot_access" + CRLF
+        client.send(startRequest.encode())
+        time.sleep(0.01)
+        response = client.recv(4096)      #4096: buffer size
+        startResponse = repr(response)
+        print(startResponse)
+        
+        if 'OK: DX Information Server' not in startResponse:
+            client.close()
+            print('[E] Command start request response to DX100 is not successful!')
+            return
+
+        #COMMAND request
+        command = "1, 0"
+        commandLength = self.command_data_length(command)
+        commandRequest = "HOSTCTRL_REQUEST" + " " + "RPOSC" + " " + str(commandLength) + CRLF
+        client.send(commandRequest.encode())
+        time.sleep(0.01)
+        response = client.recv(4096)      #4096: buffer size
+        commandResponse = repr(response)
+        print(commandResponse)
+        if ('OK: ' + "RPOSC" not in commandResponse):
+            client.close()
+            print('[E] Command request response to DX100 is not successful!')
+            return
+        else:
+            commandDataRequest = command + CR
+            client.send(commandDataRequest.encode())
+            time.sleep(0.01)
+            response = client.recv(4096)
+            commandDataResponse = repr(response)
+            print(commandDataResponse)
+            if commandDataResponse:
+                client.close()
+            time.sleep(0.01)
+            commandDataResponse = commandDataResponse[2:50]
+            self.CurrentPos = np.fromstring(commandDataResponse, dtype = float, sep=',')
+
     def RPY2mtrx(self):
-        Rx = self.CurrentPos[5]*pi/180
-        Ry = self.CurrentPos[6]*pi/180
-        Rz = self.CurrentPos[7]*pi/180
+        Rx = self.CurrentPos[3]*pi/180
+        Ry = self.CurrentPos[4]*pi/180
+        Rz = self.CurrentPos[5]*pi/180
         return np.array([[cos(Rz)*cos(Ry), cos(Rz)*sin(Ry)*sin(Rx) - sin(Rz)*cos(Rx), sin(Rz)*sin(Rx)+cos(Rz)*sin(Ry)*cos(Rx)],
         [sin(Rz)*cos(Ry), cos(Rz)*cos(Rx) + sin(Rz)*sin(Ry)*sin(Rx), sin(Rz)*sin(Ry)*cos(Rx)-cos(Rz)*sin(Rx)],
         [-sin(Ry), cos(Ry)*sin(Rx), cos(Ry)*cos(Rx)]])
 
     def read(self):
         R = self.RPY2mtrx()
-        t = np.array([self.CurrentPos[3], self.CurrentPos[4], self.CurrentPos[5]]).reshape(3,1)
+        t = np.array([self.CurrentPos[0], self.CurrentPos[1], self.CurrentPos[2]]).reshape(3,1)
         return R, t
 
     def save(self, path, mtx):
@@ -172,8 +221,8 @@ class RobotTask():
         return d
 
     def process(self):
-        R_path = 'R.txt'
-        t_path = 't.txt'
+        # R_path
+        # t_path
         R_end2base = []
         T_end2base = []
         H_end2base_model = []
@@ -190,6 +239,7 @@ class RobotTask():
                     print(f"ROBOT TO WAYPOINT {pos_no}...")
                     self.robot_move_to_pos(a)
                     print(a)
+                    time.sleep(2)
                     pos_no += 1
                     if pos_no == waypoint + 1:
                         print("----------ROBOT TRAJECTORY IS FINISHED----------\nInput 'r' to return...")
@@ -200,8 +250,10 @@ class RobotTask():
                     print(f"ROBOT TO WAYPOINT {pos_no}...")
                     self.robot_move_to_pos(a)
                     print(a)
+                    time.sleep(2)
                     pos_no += 1
             elif i == 't':
+                self.read_pos_from_robot()
                 R, t = self.read()
                 print(f'\nTRANSFORMATION AT WAYPOINT {pos_no-1}:')
                 print('Rotation R:\n', R)
