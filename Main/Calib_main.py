@@ -25,7 +25,6 @@ monoCalibrate()
 
 # Calibration for laser triangulation - not implemented yet
 
-
 # Calibration for hand-eye robot - not check yet
 handeyeCalibrate()
 

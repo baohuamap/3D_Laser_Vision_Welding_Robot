@@ -113,8 +113,14 @@ def LaserPosition(chessPath,LaserPath):
     return tvec1, rotation_matrix1
 
 tvec1, rotation_matrix1 = LaserPosition(
-    "D:\Code\Python_Code\WeldingRobot\VisionVer11\Mycamera/LaserCalibration/chess8.png",
-    "D:\Code\Python_Code\WeldingRobot\VisionVer11\Mycamera/LaserCalibration/laser8.png")
+    "D:\Code\Welding_Robot\DataSet\Mycamera\LaserCalibration\chess6.png",
+    "D:\Code\Welding_Robot\DataSet\Mycamera\LaserCalibration\laser6.png")
+tvec2, rotation_matrix2 = LaserPosition(
+    "D:\Code\Welding_Robot\DataSet\Mycamera\LaserCalibration\chess8.png",
+    "D:\Code\Welding_Robot\DataSet\Mycamera\LaserCalibration\laser8.png")
+tvec3, rotation_matrix3 = LaserPosition(
+    "D:\Code\Welding_Robot\DataSet\Mycamera\LaserCalibration\chess10.png",
+    "D:\Code\Welding_Robot\DataSet\Mycamera\LaserCalibration\laser10.png")
 
 # Least Square Error Plane Fitting__________________________________________________
 x_square = 0
@@ -187,10 +193,10 @@ w = np.array([0,0,1])
 ax.quiver(x, y, z, u, v, w, length=50, normalize=True)
 ChessPlane(ax,tvec1,rotation_matrix1, 'c')
 coordinate(ax,tvec1,rotation_matrix1, 'O1')
-# ChessPlane(ax,tvec2,rotation_matrix2, 'm')
-# coordinate(ax,tvec2,rotation_matrix2, 'O2')
-# ChessPlane(ax,tvec3,rotation_matrix3, 'y')
-# coordinate(ax,tvec3,rotation_matrix3, 'O3')
+ChessPlane(ax,tvec2,rotation_matrix2, 'm')
+coordinate(ax,tvec2,rotation_matrix2, 'O2')
+ChessPlane(ax,tvec3,rotation_matrix3, 'y')
+coordinate(ax,tvec3,rotation_matrix3, 'O3')
 # ChessPlane(ax,tvec4,rotation_matrix4, 'g')
 # coordinate(ax,tvec4,rotation_matrix4, 'O3')
 # ChessPlane(ax,tvec5,rotation_matrix5, 'b')

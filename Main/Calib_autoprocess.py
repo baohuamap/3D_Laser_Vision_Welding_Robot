@@ -1,6 +1,3 @@
-from torch import has_cuda
-
-
 '''
 Written by: Bao Hua
  
@@ -33,6 +30,7 @@ CRLF = "\r\n"
 
 # global variables
 check_path = checkerboard_calib_cam_path
+laser_path = checkerboard_calib_laser_path
 robot_path = calib_trajectory           # Open when calibrating
 R_path = R_path
 t_path = t_path
@@ -41,7 +39,6 @@ t_path = t_path
 class BaslerCam():
     def __init__(self,key):
         self.key = key
-        self.number = 10
         self.image = 1
         self.started = True
         self._tlFactory = pylon.TlFactory.GetInstance()
@@ -148,10 +145,8 @@ class RobotTask():
     def read_pos_from_robot(self):
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.settimeout(5)
-        
         #Connect to the client/DX100 controller
         client.connect((DX100Address, DX100tcpPort))
-
         #START request
         startRequest = "CONNECT Robot_access" + CRLF
         client.send(startRequest.encode())
@@ -159,12 +154,10 @@ class RobotTask():
         response = client.recv(4096)      #4096: buffer size
         startResponse = repr(response)
         print(startResponse)
-        
         if 'OK: DX Information Server' not in startResponse:
             client.close()
             print('[E] Command start request response to DX100 is not successful!')
             return
-
         #COMMAND request
         command = "1, 0"
         commandLength = self.command_data_length(command)
@@ -268,17 +261,10 @@ class RobotTask():
                 self.save(t_path, TT)
                 print('ALL WAYPOINT TRANSFORMATIONS SAVED!')
                 time.sleep(3)
-            # elif i == 'p':
-            #     R, t = self.read()
-            #     H = self._toHomo(R, t)
-            #     # H_end2base_model.append(H)
-            #     H_end2base_model = H
-            #     H = np.array(H_end2base_model)
-            #     self._save_model_poses(H, self.model_count-1)
-            #     print(f'MODEL POSE {self.model_count-1} RECORDED!')
-            #     time.sleep(1)
+
     def stop(self):
         self.stopped = True
+
     def start(self):
         threading.Thread(target=self.process, args=()).start()  
 
@@ -303,7 +289,6 @@ if __name__ == "__main__":
         choice = cv.waitKey(70)
         if choice & 0xFF == ord("c"):
             check_count = check_count + 1
-            # print(count)
             # To start number with 0, e.g, 01 02 03 ... 09 10 11 12 ... 99
             if check_count <10:
                 filename = check_path +"\checkerboard_0" + str(check_count) +'.jpg'
@@ -311,7 +296,15 @@ if __name__ == "__main__":
                 filename = check_path +"\checkerboard_" + str(check_count) +'.jpg'
             cv.imwrite(filename, img)
             print('Captured checkerboard image\nPair %d ' %(check_count))
+        elif choice & 0xFF == ord("v"):
+            # To start number with 0, e.g, 01 02 03 ... 09 10 11 12 ... 99
+            if check_count <10:
+                filename = laser_path +"\laser_0" + str(check_count) +'.jpg'
+            else:
+                filename = laser_path +"\laser_" + str(check_count) +'.jpg'
+            cv.imwrite(filename, img)
+            print('Captured laser image\nPair %d ' %(check_count))
         elif choice & 0xFF == ord("q"):
-            # VisionSystem.stop()
+            VisionSystem.stop()
             Robot.stop()
             break

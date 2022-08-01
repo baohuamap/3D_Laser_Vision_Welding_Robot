@@ -1,5 +1,6 @@
 # Images path
 checkerboard_calib_cam_path = 'D:/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/MyCamera/Checkerboard_calib_cam'
+checkerboard_calib_laser_path = 'D:/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/MyCamera/Checkerboard_calib_laser'
 
 # Robot trajectory path
 calib_trajectory = 'D:/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/RobotTrajectory/calib_trajectory.txt'

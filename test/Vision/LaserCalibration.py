@@ -1,4 +1,5 @@
 # source: http://tnuaa.nuaa.edu.cn/njhkhten/article/html/202004009
+
 import cv2 as cv
 import numpy as np
 from matplotlib import pyplot as plt
@@ -46,8 +47,8 @@ def coordinate(variable, position, rotation, coordinateNo):
      length=100,color = 'g', normalize=True),variable.quiver(xvecz, yvecz, zvecz, uvecz, vvecz, wvecz,
      length=100, normalize=True), variable.text(position[0][0] , position[1][0], position[2][0] , coordinateNo, fontsize=10)
 
-def LaserPosition(chessPath,LaserPath):
-    chessraw = cv.imread(chessPath)
+def LaserPosition(ChessPath,LaserPath):
+    chessraw = cv.imread(ChessPath)
     chess = cv.cvtColor(chessraw,cv.COLOR_BGR2GRAY)   
     laserraw = cv.imread(LaserPath)
     laser = cv.cvtColor(laserraw,cv.COLOR_BGR2GRAY)   
