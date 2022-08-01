@@ -40,14 +40,17 @@ class vision():
         d  = 2.32748012e+02
         self.plane = [a,b,c,d]
         # adjust according to img
-        self.rows = 1208
-        self.cols = 1928
+        # self.rows = 1208
+        # self.cols = 1928
+        self.rows = 2748
+        self.cols = 3840
 
     def Preprocessing(self,img):
         newcameramtx, _ =cv.getOptimalNewCameraMatrix(self.intrinsic,self.dist_coffs,(self.rows,self.cols),1,(self.rows,self.cols))
         # undistort
-        # img = cv.undistort(img, self.intrinsic, self.dist_coffs, None, newcameramtx)
+        img = cv.undistort(img, self.intrinsic, self.dist_coffs, None, newcameramtx)
         grayimg = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        # blur = cv.GaussianBlur(img,(7,7),0)
         blur = cv.GaussianBlur(grayimg,(7,7),0)
         _, thresh = cv.threshold(blur,100,255,cv.THRESH_BINARY)
         closing = thresh
@@ -60,7 +63,7 @@ class vision():
     # http://tnuaa.nuaa.edu.cn/njhkhten/article/html/202004009
     def LaserCenter(self,img):
         center = np.zeros((self.rows,self.cols))
-    # find the center point
+        # find the center point
         for x in range(self.cols):
             sum1 = 0.0
             sum2 = 0.0
@@ -115,7 +118,7 @@ class vision():
                         previous = current
         return mainline_img
 
-    #Development of a real-time laser-based machine vision system to monitor and control welding processes 
+    # Development of a real-time laser-based machine vision system to monitor and control welding processes 
     # by Wei Huang & Radovan Kovacevic
     def CD(self,img):
         feature1 = np.array([0, 0])
