@@ -4,7 +4,6 @@ from MyLibrary import vision
 import numpy as np
 import threading
 import time, sys
-import serial
 from math import log
 import socket
 

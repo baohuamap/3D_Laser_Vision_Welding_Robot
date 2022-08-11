@@ -5,7 +5,7 @@ from MyLibrary import vision, yaskawa
 import time
 
 vis = vision()
-img = cv.imread("D:\Code\Python_Code\WeldingRobot\VisionVer11\Mycamera\Laser\Triple Laser2.png",0)
+img = cv.imread("D:/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/MyCamera/Laser_stripes/laser6.jpg",0)
 # img = cv.imread("D:\Code\Python_Code\WeldingRobot\VisionVer11\Mycamera\Laser/14.jpg",0)
 rows,cols = img.shape
 med = cv.medianBlur(img, 9) 
@@ -31,6 +31,7 @@ for i in range(300, cols - 300):
         previous = np.array([roi[0][a[0][average_index]],roi[1][a[0][average_index]]])
 
     elif len(a[0]) != 0:
+        ave = (max(roi[1][a[0]]) + min(roi[1][a[0]]))/ 2
         average_index = np.abs(roi[1][a[0]] - ave).argmin()
         current = np.array([roi[0][a[0][average_index]],roi[1][a[0][average_index]]])
         if np.linalg.norm(current[0:3] - previous[0:3]) < 10:

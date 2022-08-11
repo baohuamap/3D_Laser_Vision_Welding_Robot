@@ -4,7 +4,7 @@ from MyLibrary import vision
 
 vis = vision()
 
-src = cv.imread("D:\Code\Python_Code\WeldingRobot\VisionVer11\Mycamera\Position/2.png")
+src = cv.imread("D:/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/MyCamera/Laser_stripes/laser6.jpg")
 gray = cv.cvtColor(src,cv.COLOR_BGR2GRAY)   
 rows,cols = gray.shape
 img = vis.Preprocessing(gray)

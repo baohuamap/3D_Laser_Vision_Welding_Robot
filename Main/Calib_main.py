@@ -8,9 +8,9 @@ Main code for all the calibration processses.
 
 from Calib_camera import monoCalibrate
 from Calib_handeye import handeyeCalibrate
-
+from Calib_laser import laserCalibrate
 import time
-import os
+
 
 process_start = time.time()
 
@@ -23,10 +23,11 @@ is dissembled, changed in baseline distance, modified.
 # Calibration for camera
 monoCalibrate()
 
-# Calibration for laser triangulation - not implemented yet
-
-# Calibration for hand-eye robot - not check yet
+# Calibration for hand-eye robot
 handeyeCalibrate()
+
+# Calibration for laser triangulation 
+laserCalibrate()
 
 process_end = time.time()
 print("\n\t* * * FULL PROCESS COMPLETE * * *")

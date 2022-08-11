@@ -7,8 +7,12 @@ Author: Bao Hua
 
 import numpy as np
 import cv2 as cv
-import sys
+from GlobalVariables import *
+import socket
+import time
 
+CR = "\r"
+CRLF = "\r\n"
 
 def save_coefficients(mtx, dist, path):
     """ Save the camera matrix and the distortion coefficients to given path/file. """
@@ -22,36 +26,44 @@ def savematrix(filename:str, matrix):
     with open(filename, 'w') as f:
         f.writelines('\t'.join(str(j) for j in i) + '\n' for i in matrix)
 
-class vision():
+def load_coefficients(path):
+    """ Loads camera matrix and distortion coefficients. """
+    # FILE_STORAGE_READ
+    cv_file = cv.FileStorage(path, cv.FILE_STORAGE_READ)
+    # note we also have to specify the type to retrieve otherwise we only get a
+    # FileNode object back instead of a matrix
+    camera_matrix = cv_file.getNode("K").mat()
+    dist_matrix = cv_file.getNode("D").mat()
+    cv_file.release()
+    return [camera_matrix, dist_matrix]
+
+def load_eye2hand(path):
+     # FILE_STORAGE_READ
+    cv_file = cv.FileStorage(path, cv.FILE_STORAGE_READ)
+    eye2hand = cv_file.getNode("K1").mat()
+    cv_file.release()
+    return eye2hand
+
+class Vision():
     def __init__(self):
-        self.intrinsic=np.array([[1.43613960e+03,0.00000000e+00,9.45116586e+02],
-                                [0.00000000e+00,1.43648424e+03,5.83160320e+02],
-                                [0.00000000e+00,0.00000000e+00,1.00000000e+00]])
-        self.dist_coffs=np.array([[-8.76138852e-02, 2.07436397e-02, 1.09728038e-03, -3.02686811e-05, 3.81461021e-01]])
-        # eye to hand coordinatex
-        self.eye2hand = np.array([[-8.74782056e-01, -3.79300492e-01, -3.01475524e-01,  9.29334550e+01],
-                                [ 4.84503838e-01, -6.89318581e-01, -5.38605538e-01,  2.08188779e+02],
-                                [-3.51933429e-03, -6.17228508e-01,  7.86776069e-01, -1.14571713e+02],
-                                [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  1.00000000e+00]])
+        self.intrinsic, self.dist_coffs = load_coefficients((camera_params))
+        self.eye2hand = load_eye2hand((handeye_params))
         # coeffcients of laser plane: ax + by + cz + d = 0
         a = 1.49391238e-01
         b = 1.31427483e+00
         c = -1
         d  = 2.32748012e+02
         self.plane = [a,b,c,d]
-        # adjust according to img
-        # self.rows = 1208
-        # self.cols = 1928
-        self.rows = 2748
-        self.cols = 3840
+        # adjust according to sensor size
+        self.rows = 1200
+        self.cols = 1732
 
     def Preprocessing(self,img):
         newcameramtx, _ =cv.getOptimalNewCameraMatrix(self.intrinsic,self.dist_coffs,(self.rows,self.cols),1,(self.rows,self.cols))
-        # undistort
         img = cv.undistort(img, self.intrinsic, self.dist_coffs, None, newcameramtx)
-        grayimg = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-        # blur = cv.GaussianBlur(img,(7,7),0)
-        blur = cv.GaussianBlur(grayimg,(7,7),0)
+        # grayimg = cv.cvtColor(img, cv.COLOR_BGR2GRAY)     # use when img is color image
+        # blur = cv.GaussianBlur(grayimg,(7,7),0)
+        blur = cv.GaussianBlur(img,(7,7),0)                 # use when img is gray image
         _, thresh = cv.threshold(blur,100,255,cv.THRESH_BINARY)
         closing = thresh
         del blur
@@ -92,7 +104,6 @@ class vision():
 
     def TripleLaser(self,img):
         thinned = cv.ximgproc.thinning(img)
-        # cv.imshow("temp", thinned)
         mainline_img = np.zeros((self.rows,self.cols))
         roi = np.where(thinned.transpose() == 255)      #roi[0]: column, roi[1] row 
         a = np.where(roi[0] == 269)
@@ -225,8 +236,170 @@ class vision():
         cv.circle(img, (int(x),int(y)), 20, [255,0,0], 10)
         return [x, y]
         
-    def CalibParams(self):
+    def create_objpoint(self):
         square_size = 15
         objp = np.zeros((7*10,3), np.float32)  # checker size 8x11
         objp[:,:2] = np.mgrid[0:10,0:7].T.reshape(-1,2)*square_size
         return objp
+
+class Yaskawa():
+    def __init__(self):
+        self.ip_address = '192.168.255.2'
+        self.port = 80
+    
+    def utf8len(self, inputString):
+        return len(inputString.encode('utf-8'))
+
+    def command_data_length(self, command):
+        if len(command) == 0:
+            return 0
+        else:
+            return self.utf8len(command + CR)
+
+    def pos2command(self, pos):
+        command = ""
+        for i in range(len(pos)):
+            command += str(pos[i]) + ","
+        # command = command[:-1]
+        return command
+
+    def read_pos_from_txt(self, pos):
+        trajectory = open(self.robot_path, "r")
+        for i, line in enumerate(trajectory):
+            if i == pos - 1:
+                command = line.rstrip()
+        # self.CurrentPos = np.fromstring(command, dtype = float, sep=',')
+        return command
+
+    def MovJ(self, command):
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.settimeout(5)
+        client.connect((self.ip_address, self.port))
+        #START request
+        startRequest = "CONNECT Robot_access" + CRLF
+        client.send(startRequest.encode())
+        time.sleep(0.01)
+        response = client.recv(4096)      #4096: buffer size
+        startResponse = repr(response)
+        print(startResponse)
+        if 'OK: DX Information Server' not in startResponse:
+            client.close()
+            print('[E] Command start request response to DX100 is not successful!')
+            return
+        #COMMAND request
+        commandLength = self.command_data_length(command)
+        commandRequest = "HOSTCTRL_REQUEST" + " " + "MOVJ" + " " + str(commandLength) + CRLF
+        client.send(commandRequest.encode())
+        time.sleep(0.01)
+        response = client.recv(4096)      #4096: buffer size
+        commandResponse = repr(response)
+        print(commandResponse)
+        if ('OK: ' + "MOVJ" not in commandResponse):
+            client.close()
+            print('[E] Command request response to DX100 is not successful!')
+            return
+        else:
+            #COMMAND DATA request
+            commandDataRequest = command + (CR if len(command) > 0 else '')
+            client.send(commandDataRequest.encode())
+            time.sleep(0.01)
+            response = client.recv(4096)
+            commandDataResponse = repr(response)
+            # print(commandDataResponse)
+            if commandDataResponse:
+                #Close socket
+                client.close()
+        time.sleep(0.01)
+
+
+    def RposC(self):
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.settimeout(5)
+        client.connect((self.ip_address, self.port))
+        #START request
+        startRequest = "CONNECT Robot_access" + CRLF
+        client.send(startRequest.encode())
+        time.sleep(0.01)
+        response = client.recv(4096)      #4096: buffer size
+        startResponse = repr(response)
+        print(startResponse)
+        if 'OK: DX Information Server' not in startResponse:
+            client.close()
+            print('[E] Command start request response to DX100 is not successful!')
+            return
+        #COMMAND request
+        commandLength = self.command_data_length("1, 0")
+        commandRequest = "HOSTCTRL_REQUEST" + " " + "RPOSC" + " " + str(commandLength) + CRLF
+        client.send(commandRequest.encode())
+        time.sleep(0.01)
+        response = client.recv(4096)      #4096: buffer size
+        commandResponse = repr(response)
+        print(commandResponse)
+        if ('OK: ' + "RPOSC" not in commandResponse):
+            client.close()
+            print('[E] Command request response to DX100 is not successful!')
+            return
+        else:
+            #COMMAND DATA request
+            commandDataRequest = "1, 0"
+            client.send(commandDataRequest.encode())
+            time.sleep(0.01)
+            response = client.recv(4096)
+            commandDataResponse = repr(response)
+            # print(commandDataResponse)
+            if commandDataResponse:
+                client.close()
+        time.sleep(0.01)
+        current_pos = np.fromstring(commandDataResponse[2:50], dtype=float, sep=',')
+        return current_pos
+
+    def MovL(self, command):
+        global ImgArr, NowPos,CurrImg, CurrentPos
+        distance = 20
+        NowPos.append(CurrentPos)
+        ImgArr.append(CurrImg)
+
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.settimeout(5)
+        client.connect((self.ip_address, self.port))
+        startRequest = "CONNECT Robot_access" + CRLF
+        client.send(startRequest.encode())
+        time.sleep(0.01)
+        response = client.recv(4096)      #4096: buffer size
+        startResponse = repr(response)
+        if 'OK: DX Information Server' not in startResponse:
+            client.close()
+            print('[E] Command start request response to DX100 is not successful!')
+            return
+        #COMMAND request
+        commandLength = self.command_data_length(command)
+        commandRequest = "HOSTCTRL_REQUEST" + " " + "MOVL" + " " + str(commandLength) + CRLF
+        client.send(commandRequest.encode())
+        time.sleep(0.01)
+        response = client.recv(4096)      #4096: buffer size
+        commandResponse = repr(response)
+        # print(commandResponse)
+        if ('OK: ' + "MOVL" not in commandResponse):
+            client.close()
+            print('[E] Command request response to DX100 is not successful!')
+            return
+        else:
+            #COMMAND DATA request
+            commandDataRequest = command + (CR if len(command) > 0 else '')
+            client.send(commandDataRequest.encode())
+            time.sleep(0.01)
+            response = client.recv(4096)
+            commandDataResponse = repr(response)
+            # print(commandDataResponse)
+            if commandDataResponse:
+                #Close socket
+                client.close()
+                CurrentPos = self.RposC()
+                # distance = np.linalg.norm(position[0:3] - CurrentPos[0:3])
+        time.sleep(0.01)
+
+    def ArcOn(self):
+        pass 
+
+    def ArcOff(self):
+        pass   

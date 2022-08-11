@@ -8,7 +8,6 @@ Code for automated calibration of the camera:
 
 '''
 
-
 import os
 import numpy as np
 import cv2 as cv
@@ -18,8 +17,6 @@ from math import pi,sin,cos
 import threading
 os.environ["PYLON_CAMEMU"] = "3"
 import time
-from MyLib import savematrix
-import glob
 import socket
 
 # Params for NX100 controller **
@@ -31,7 +28,8 @@ CRLF = "\r\n"
 # global variables
 check_path = checkerboard_calib_cam_path
 laser_path = checkerboard_calib_laser_path
-robot_path = calib_trajectory           # Open when calibrating
+# robot_path = calib_trajectory           # Open when calibrating
+robot_path = laser_calib_trajectory       # Open when calib laser
 R_path = R_path
 t_path = t_path
 
@@ -80,7 +78,7 @@ class RobotTask():
         self.m = 0
         self.stopped = False
         self.CurrentPos = []
-        self.model_count = 0
+        # self.model_count = 0
         self.robot_path = robot_path
 
     def utf8len(self, inputString):
@@ -279,7 +277,8 @@ if __name__ == "__main__":
     # Window size reduction ratio
     t = 2
     check_count = 0
-    prj_count = 0
+    check_laser_count = 0
+    laser_count = 0
     n = 0
 
     while True:
@@ -288,7 +287,7 @@ if __name__ == "__main__":
         cv.imshow('Frame',frame)
         choice = cv.waitKey(70)
         if choice & 0xFF == ord("c"):
-            check_count = check_count + 1
+            check_count += 1
             # To start number with 0, e.g, 01 02 03 ... 09 10 11 12 ... 99
             if check_count <10:
                 filename = check_path +"\checkerboard_0" + str(check_count) +'.jpg'
@@ -297,13 +296,23 @@ if __name__ == "__main__":
             cv.imwrite(filename, img)
             print('Captured checkerboard image\nPair %d ' %(check_count))
         elif choice & 0xFF == ord("v"):
+            check_laser_count += 1
             # To start number with 0, e.g, 01 02 03 ... 09 10 11 12 ... 99
-            if check_count <10:
-                filename = laser_path +"\laser_0" + str(check_count) +'.jpg'
+            if check_laser_count <10:
+                filename = laser_path +"\checker_0" + str(check_laser_count) +'.jpg'
             else:
-                filename = laser_path +"\laser_" + str(check_count) +'.jpg'
+                filename = laser_path +"\checker_" + str(check_laser_count) +'.jpg'
             cv.imwrite(filename, img)
-            print('Captured laser image\nPair %d ' %(check_count))
+            print('Captured laser image\nPair %d ' %(check_laser_count))
+        elif choice & 0xFF == ord("b"):
+            laser_count += 1
+            # To start number with 0, e.g, 01 02 03 ... 09 10 11 12 ... 99
+            if laser_count <10:
+                filename = laser_path +"\laser_0" + str(laser_count) +'.jpg'
+            else:
+                filename = laser_path +"\laser_" + str(laser_count) +'.jpg'
+            cv.imwrite(filename, img)
+            print('Captured laser image\nPair %d ' %(laser_count))
         elif choice & 0xFF == ord("q"):
             VisionSystem.stop()
             Robot.stop()

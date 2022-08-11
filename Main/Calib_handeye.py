@@ -6,7 +6,7 @@ import numpy as np
 import cv2 as cv
 import glob
 from MyLib import load_coefficients
-from numpy.lib.npyio import load
+# from numpy.lib.npyio import load
 from GlobalVariables import *
 from matplotlib import pyplot as plt
 import time
@@ -87,7 +87,7 @@ def toHomo(R, t):
     return d
 
 def save_hand_eye_mat(mat):
-    cv_file = cv.FileStorage((xml + 'Hand_eye_mat.yml'), cv.FILE_STORAGE_WRITE)
+    cv_file = cv.FileStorage((xml + 'hand_eye_mat.yml'), cv.FILE_STORAGE_WRITE)
     cv_file.write("K1", mat)
 
 def load_pos(path):
@@ -172,5 +172,5 @@ def handeyeCalibrate():
     print(f'\t:: Homogenous transformation:\n{H}')
     print("\t:: Time consumed: %.2lf s\t\t" %(end-start))
     print("_______________________________________ HAND-EYE CALIBRATION DONE |")
-    # show_coordinate(H)
+    show_coordinate(H)
 

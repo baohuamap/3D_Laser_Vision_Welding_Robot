@@ -25,8 +25,8 @@ class vision():
         # adjust according to img
         # self.rows = 2748
         # self.cols = 3840
-        self.rows = 1208
-        self.cols = 1928
+        self.rows = 1200
+        self.cols = 1732
         # self.rows = 720
         # self.cols = 1080
 
@@ -34,8 +34,8 @@ class vision():
         newcameramtx, _ =cv.getOptimalNewCameraMatrix(self.intrinsic,self.dist_coffs,(self.rows,self.cols),1,(self.rows,self.cols))
         # undistort
         # img = cv.undistort(img, self.intrinsic, self.dist_coffs, None, newcameramtx)
-        grayimg = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-        blur = cv.GaussianBlur(grayimg,(7,7),0)
+        # grayimg = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        blur = cv.GaussianBlur(img,(7,7),0)
         _, thresh = cv.threshold(blur,100,255,cv.THRESH_BINARY)
         closing = thresh
         del blur

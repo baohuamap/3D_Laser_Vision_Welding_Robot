@@ -6,7 +6,7 @@ from MyLibrary import vision
 import time
 vis = vision()
 t = time.time()
-img = cv.imread("D:\Code\Python_Code\WeldingRobot\VisionVer11\Mycamera\Position/2.png",0)
+img = cv.imread("D:/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/MyCamera/Laser_stripes/laser6.jpg",0)
 rows,cols = img.shape
 print(rows, cols)
 img = vis.Preprocessing(img)
