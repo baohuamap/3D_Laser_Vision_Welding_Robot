@@ -1,0 +1,4 @@
+Đã calib mono
+Đã calib hand2eye
+Đã calib được laser
+Đã test được thuật toán extract
