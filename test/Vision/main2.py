@@ -220,10 +220,10 @@ class SoftwareTask(threading.Thread):
                 cv.circle(img, (int(imgpos[0]),int(imgpos[1] - 50)), 10, 255, 10)
 				
                 # calculate seam NowPos
-                Zc = -self.d / (self.a/self.fx*(imgpos[0]-self.cx) + self.b/self.fy*(imgpos[1] - self.cy) + self.c)
-                weldpoint2camera = np.array([[Zc/self.fx*(imgpos[0]-self.cx)], [Zc/self.fy*(imgpos[1]-self.cy)], [Zc] , [1]])
-                tool2robot = self.vis.homogeneous(NowPos[0])
-                weldpoint2robot = tool2robot.dot(self.eye2hand).dot(weldpoint2camera).flatten()[0:3]
+                Zc                 = -self.d / (self.a/self.fx*(imgpos[0]-self.cx) + self.b/self.fy*(imgpos[1] - self.cy) + self.c)
+                weldpoint2camera   = np.array([[Zc/self.fx*(imgpos[0]-self.cx)], [Zc/self.fy*(imgpos[1]-self.cy)], [Zc] , [1]])
+                tool2robot         = self.vis.homogeneous(NowPos[0])
+                weldpoint2robot    = tool2robot.dot(self.eye2hand).dot(weldpoint2camera).flatten()[0:3]
                 weldpoint2robot[0] = weldpoint2robot[0]
                 weldpoint2robot[1] = weldpoint2robot[1] + 7
                 weldpoint2robot[2] = weldpoint2robot[2] + 2

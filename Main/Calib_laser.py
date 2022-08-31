@@ -114,13 +114,16 @@ def LaserPosition(chessPath,LaserPath):
     return tvec, rotation_matrix
 
 def save_laser_plane(mat):
-    cv_file = cv.FileStorage((xml + 'laser_plan.yml'), cv.FILE_STORAGE_WRITE)
+    cv_file = cv.FileStorage((xml + 'laser_plane.yml'), cv.FILE_STORAGE_WRITE)
     cv_file.write("P", mat)
 
 def laserCalibrate():
-    tvec1, rotation_matrix1 = LaserPosition( laser_path + "checker_03.jpg", laser_path + "p_laser_03.jpg")
-    tvec2, rotation_matrix2 = LaserPosition( laser_path + "checker_05.jpg", laser_path + "p_laser_05.jpg")
-    tvec3, rotation_matrix3 = LaserPosition( laser_path + "checker_06.jpg", laser_path + "p_laser_06.jpg")
+    tvec1, rotation_matrix1 = LaserPosition( laser_path + "checker_01.jpg", laser_path + "laser_01.jpg")
+    tvec2, rotation_matrix2 = LaserPosition( laser_path + "checker_02.jpg", laser_path + "laser_02.jpg")
+    tvec3, rotation_matrix3 = LaserPosition( laser_path + "checker_03.jpg", laser_path + "laser_03.jpg")
+    tvec4, rotation_matrix4 = LaserPosition( laser_path + "checker_04.jpg", laser_path + "laser_04.jpg")
+    tvec5, rotation_matrix5 = LaserPosition( laser_path + "checker_05.jpg", laser_path + "laser_05.jpg")
+    tvec6, rotation_matrix6 = LaserPosition( laser_path + "checker_06.jpg", laser_path + "laser_06.jpg")
 
     # Least Square Error Plane Fitting__________________________________________________
     x_square = 0
@@ -199,10 +202,10 @@ def laserCalibrate():
     coordinate(ax,tvec2,rotation_matrix2, 'O2')
     ChessPlane(ax,tvec3,rotation_matrix3, 'y')
     coordinate(ax,tvec3,rotation_matrix3, 'O3')
-    # ChessPlane(ax,tvec4,rotation_matrix4, 'g')
-    # coordinate(ax,tvec4,rotation_matrix4, 'O3')
-    # ChessPlane(ax,tvec5,rotation_matrix5, 'b')
-    # coordinate(ax,tvec5,rotation_matrix5, 'O3')
+    ChessPlane(ax,tvec4,rotation_matrix4, 'g')
+    coordinate(ax,tvec4,rotation_matrix4, 'O3')
+    ChessPlane(ax,tvec5,rotation_matrix5, 'b')
+    coordinate(ax,tvec5,rotation_matrix5, 'O3')
 
     ax.text(50 , 0, 0 ,'X', fontsize=10)
     ax.text(0 , 50, 0 ,'Y', fontsize=10)

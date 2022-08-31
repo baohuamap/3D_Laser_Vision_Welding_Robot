@@ -21,10 +21,10 @@ is dissembled, changed in baseline distance, modified.
 """
 
 # Calibration for camera
-monoCalibrate()
+# monoCalibrate()
 
 # Calibration for hand-eye robot
-handeyeCalibrate()
+# handeyeCalibrate()
 
 # Calibration for laser triangulation 
 laserCalibrate()

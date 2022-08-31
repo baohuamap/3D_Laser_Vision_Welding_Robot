@@ -44,19 +44,25 @@ def load_eye2hand(path):
     cv_file.release()
     return eye2hand
 
+def load_laserplane(path):
+    cv_file = cv.FileStorage(path, cv.FILE_STORAGE_READ)
+    a, b, d = cv_file.getNode("P").mat()
+    cv_file.release()
+    return float(a), float(b), float(d)
 class Vision():
     def __init__(self):
         self.intrinsic, self.dist_coffs = load_coefficients((camera_params))
         self.eye2hand = load_eye2hand((handeye_params))
         # coeffcients of laser plane: ax + by + cz + d = 0
-        a = 1.49391238e-01
-        b = 1.31427483e+00
+        # a = 3.4980491606939381
+        # b = 1.9111413571058655e-01
         c = -1
-        d  = 2.32748012e+02
+        # d  = 1.5376725252934193e+02
+        a, b, d = load_laserplane((laserplane_params))
         self.plane = [a,b,c,d]
         # adjust according to sensor size
         self.rows = 1200
-        self.cols = 1732
+        self.cols = 1700
 
     def Preprocessing(self,img):
         newcameramtx, _ =cv.getOptimalNewCameraMatrix(self.intrinsic,self.dist_coffs,(self.rows,self.cols),1,(self.rows,self.cols))
@@ -135,14 +141,13 @@ class Vision():
         feature1 = np.array([0, 0])
         feature2 = np.array([0, 0])
         roi = np.where(img.transpose() == 255)
-        for i in range(105, len(roi[0]), 1):
+        for i in range(28, len(roi[0]), 1):
             if roi[0][i+1] > roi[0][i] :
                 feature1[0] = roi[0][i]
                 feature1[1] = roi[1][i]
                 feature2[0] = roi[0][i+1]
                 feature2[1] = roi[1][i+1]
                 break
-        # cv.circle(img, (feature1[0], feature1[1]), 10, 255, 5) 
         return feature1,feature2, (feature1 + feature2)/2
     
     def houghline(self, img):
@@ -246,6 +251,8 @@ class Yaskawa():
     def __init__(self):
         self.ip_address = '192.168.255.2'
         self.port = 80
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client.settimeout(5)
     
     def utf8len(self, inputString):
         return len(inputString.encode('utf-8'))
@@ -271,132 +278,86 @@ class Yaskawa():
         # self.CurrentPos = np.fromstring(command, dtype = float, sep=',')
         return command
 
-    def MovJ(self, command):
-        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client.settimeout(5)
-        client.connect((self.ip_address, self.port))
+    def StartRequest(self):
+        self.client.connect((self.ip_address, self.port))
         #START request
-        startRequest = "CONNECT Robot_access" + CRLF
-        client.send(startRequest.encode())
+        startRequest = "CONNECT Robot_access Keep-Alive:-1" + CRLF
+        self.client.send(startRequest.encode())
         time.sleep(0.01)
-        response = client.recv(4096)      #4096: buffer size
+        response = self.client.recv(4096)      #4096: buffer size
         startResponse = repr(response)
-        print(startResponse)
+        # print(startResponse)
         if 'OK: DX Information Server' not in startResponse:
-            client.close()
+            self.client.close()
             print('[E] Command start request response to DX100 is not successful!')
-            return
+
+    def Stop(self):
+        self.client.close()
+
+    def MovJ(self, command):
         #COMMAND request
         commandLength = self.command_data_length(command)
         commandRequest = "HOSTCTRL_REQUEST" + " " + "MOVJ" + " " + str(commandLength) + CRLF
-        client.send(commandRequest.encode())
+        self.client.send(commandRequest.encode())
         time.sleep(0.01)
-        response = client.recv(4096)      #4096: buffer size
+        response = self.client.recv(4096)      #4096: buffer size
         commandResponse = repr(response)
-        print(commandResponse)
+        # print(commandResponse)
         if ('OK: ' + "MOVJ" not in commandResponse):
-            client.close()
             print('[E] Command request response to DX100 is not successful!')
             return
         else:
             #COMMAND DATA request
             commandDataRequest = command + (CR if len(command) > 0 else '')
-            client.send(commandDataRequest.encode())
+            self.client.send(commandDataRequest.encode())
             time.sleep(0.01)
-            response = client.recv(4096)
+            response = self.client.recv(4096)
             commandDataResponse = repr(response)
-            # print(commandDataResponse)
-            if commandDataResponse:
-                #Close socket
-                client.close()
-        time.sleep(0.01)
-
+        return commandDataResponse
 
     def RposC(self):
-        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client.settimeout(5)
-        client.connect((self.ip_address, self.port))
-        #START request
-        startRequest = "CONNECT Robot_access" + CRLF
-        client.send(startRequest.encode())
-        time.sleep(0.01)
-        response = client.recv(4096)      #4096: buffer size
-        startResponse = repr(response)
-        print(startResponse)
-        if 'OK: DX Information Server' not in startResponse:
-            client.close()
-            print('[E] Command start request response to DX100 is not successful!')
-            return
         #COMMAND request
-        commandLength = self.command_data_length("1, 0")
+        command = "1, 0"
+        commandLength = self.command_data_length(command)
         commandRequest = "HOSTCTRL_REQUEST" + " " + "RPOSC" + " " + str(commandLength) + CRLF
-        client.send(commandRequest.encode())
+        self.client.send(commandRequest.encode())
         time.sleep(0.01)
-        response = client.recv(4096)      #4096: buffer size
+        response = self.client.recv(4096)      #4096: buffer size
         commandResponse = repr(response)
-        print(commandResponse)
         if ('OK: ' + "RPOSC" not in commandResponse):
-            client.close()
             print('[E] Command request response to DX100 is not successful!')
             return
         else:
             #COMMAND DATA request
-            commandDataRequest = "1, 0"
-            client.send(commandDataRequest.encode())
+            commandDataRequest = command + CR
+            self.client.send(commandDataRequest.encode())
             time.sleep(0.01)
-            response = client.recv(4096)
+            response = self.client.recv(4096)
             commandDataResponse = repr(response)
-            # print(commandDataResponse)
-            if commandDataResponse:
-                client.close()
         time.sleep(0.01)
         current_pos = np.fromstring(commandDataResponse[2:50], dtype=float, sep=',')
         return current_pos
 
     def MovL(self, command):
-        global ImgArr, NowPos,CurrImg, CurrentPos
-        distance = 20
-        NowPos.append(CurrentPos)
-        ImgArr.append(CurrImg)
-
-        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client.settimeout(5)
-        client.connect((self.ip_address, self.port))
-        startRequest = "CONNECT Robot_access" + CRLF
-        client.send(startRequest.encode())
-        time.sleep(0.01)
-        response = client.recv(4096)      #4096: buffer size
-        startResponse = repr(response)
-        if 'OK: DX Information Server' not in startResponse:
-            client.close()
-            print('[E] Command start request response to DX100 is not successful!')
-            return
         #COMMAND request
         commandLength = self.command_data_length(command)
         commandRequest = "HOSTCTRL_REQUEST" + " " + "MOVL" + " " + str(commandLength) + CRLF
-        client.send(commandRequest.encode())
+        self.client.send(commandRequest.encode())
         time.sleep(0.01)
-        response = client.recv(4096)      #4096: buffer size
+        response = self.client.recv(4096)      #4096: buffer size
         commandResponse = repr(response)
-        # print(commandResponse)
         if ('OK: ' + "MOVL" not in commandResponse):
-            client.close()
             print('[E] Command request response to DX100 is not successful!')
             return
         else:
             #COMMAND DATA request
             commandDataRequest = command + (CR if len(command) > 0 else '')
-            client.send(commandDataRequest.encode())
+            self.client.send(commandDataRequest.encode())
             time.sleep(0.01)
-            response = client.recv(4096)
+            response = self.client.recv(4096)
             commandDataResponse = repr(response)
-            # print(commandDataResponse)
-            if commandDataResponse:
-                #Close socket
-                client.close()
-                CurrentPos = self.RposC()
-                # distance = np.linalg.norm(position[0:3] - CurrentPos[0:3])
-        time.sleep(0.01)
+        return commandDataResponse
+        
 
     def ArcOn(self):
         pass 

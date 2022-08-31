@@ -11,6 +11,7 @@ welding_trajectory = ''
 xml = 'D:/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/XML_files/'
 camera_params = 'D:/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/XML_files/camera_params.yml'
 handeye_params = 'D:/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/XML_files/Hand_eye_mat.yml'
+laserplane_params = 'D:/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/XML_files/laser_plane.yml'
 
 R_path = 'D:/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/XML_files/R.txt'
 t_path = 'D:/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/XML_files/t.txt'

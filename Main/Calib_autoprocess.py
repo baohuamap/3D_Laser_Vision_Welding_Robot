@@ -29,10 +29,9 @@ CRLF = "\r\n"
 check_path = checkerboard_calib_cam_path
 laser_path = checkerboard_calib_laser_path
 # robot_path = calib_trajectory           # Open when calibrating
-robot_path = laser_calib_trajectory       # Open when calib laser
+robot_path = laser_calib_trajectory        # Open when calib laser
 R_path = R_path
 t_path = t_path
-
 
 class BaslerCam():
     def __init__(self,key):
@@ -45,6 +44,10 @@ class BaslerCam():
 
     def grabImg(self):
         self.camera.Open()
+        self.camera.Width.SetValue(1700)
+        self.camera.Height.SetValue(1200)
+        self.camera.OffsetX.SetValue(8)
+        self.camera.OffsetY.SetValue(8)
         self.camera.StartGrabbing()
         printed = False
 
@@ -52,7 +55,7 @@ class BaslerCam():
             if not self.camera.IsGrabbing():
                 break
             grabResult = self.camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException)
-            cameraContextValue = grabResult.GetCameraContext()
+            # cameraContextValue = grabResult.GetCameraContext()
             if not printed:
                 # print("Camera model",  ": ", self.camera[cameraContextValue].GetDeviceInfo().GetModelName())
                 # Now, the image data can be processed.
@@ -75,7 +78,7 @@ class BaslerCam():
 class RobotTask():
     def __init__(self, key):
         self.key = key
-        self.m = 0
+        self.m = 0.
         self.stopped = False
         self.CurrentPos = []
         # self.model_count = 0
@@ -222,6 +225,8 @@ class RobotTask():
         trajectory = open(self.robot_path, "r")
         waypoint = len(trajectory.readlines())
         print(f"There are {waypoint} waypoints in robot trajectory.")
+        print('press "r" to move to the next waypoint, "t" to record the current waypoint, "s" to save.')
+        print('press "c" to capture checkerboard, "v" to capture checkerboard for laser calib, "b" to  capture laser  "q" to quit')
         while not self.stopped:
             i = input()         # keyboard input
             if i == "r":
