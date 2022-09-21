@@ -41,6 +41,8 @@ class BaslerCam():
         self._tlFactory = pylon.TlFactory.GetInstance()
         self._devices = self._tlFactory.EnumerateDevices()
         self.camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())
+        self.LaserOn = True
+        # self.LaserOn = False
 
     def grabImg(self):
         self.camera.Open()
@@ -48,6 +50,10 @@ class BaslerCam():
         self.camera.Height.SetValue(1200)
         self.camera.OffsetX.SetValue(8)
         self.camera.OffsetY.SetValue(8)
+        if self.LaserOn == True:
+            self.camera.ExposureTimeAbs = 4000
+        else:
+            self.camera.ExposureTimeAbs = 40000 
         self.camera.StartGrabbing()
         printed = False
 

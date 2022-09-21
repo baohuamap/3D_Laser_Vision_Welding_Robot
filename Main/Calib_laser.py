@@ -84,11 +84,11 @@ def LaserPosition(chessPath,LaserPath):
     temp1 = laser
 
     newcameramtx, _ =cv.getOptimalNewCameraMatrix(intrinsic,dist_coffs,(rows,cols),1,(rows,cols))
-    temp2 = cv.undistort(chess, intrinsic, dist_coffs, None, newcameramtx)
+    # temp2 = cv.undistort(chess, intrinsic, dist_coffs, None, newcameramtx)
+    temp2 = chess
 
     # Adaptive center extraction
     thinned = cv.ximgproc.thinning(laser)
-    # Laser center extraction - can change function depends on the laser type
     line = vis.LaserCenter(thinned)     
     inv = np.linalg.inv(rotation_matrix)
     for i in range(300,rows-300,1):
@@ -119,8 +119,8 @@ def save_laser_plane(mat):
 
 def laserCalibrate():
     tvec1, rotation_matrix1 = LaserPosition( laser_path + "checker_01.jpg", laser_path + "laser_01.jpg")
-    tvec2, rotation_matrix2 = LaserPosition( laser_path + "checker_02.jpg", laser_path + "laser_02.jpg")
-    tvec3, rotation_matrix3 = LaserPosition( laser_path + "checker_03.jpg", laser_path + "laser_03.jpg")
+    # tvec2, rotation_matrix2 = LaserPosition( laser_path + "checker_02.jpg", laser_path + "laser_02.jpg")
+    # tvec3, rotation_matrix3 = LaserPosition( laser_path + "checker_03.jpg", laser_path + "laser_03.jpg")
     tvec4, rotation_matrix4 = LaserPosition( laser_path + "checker_04.jpg", laser_path + "laser_04.jpg")
     tvec5, rotation_matrix5 = LaserPosition( laser_path + "checker_05.jpg", laser_path + "laser_05.jpg")
     tvec6, rotation_matrix6 = LaserPosition( laser_path + "checker_06.jpg", laser_path + "laser_06.jpg")
@@ -198,10 +198,10 @@ def laserCalibrate():
     ax.quiver(x, y, z, u, v, w, length=50, normalize=True)
     ChessPlane(ax,tvec1,rotation_matrix1, 'c')
     coordinate(ax,tvec1,rotation_matrix1, 'O1')
-    ChessPlane(ax,tvec2,rotation_matrix2, 'm')
-    coordinate(ax,tvec2,rotation_matrix2, 'O2')
-    ChessPlane(ax,tvec3,rotation_matrix3, 'y')
-    coordinate(ax,tvec3,rotation_matrix3, 'O3')
+    # ChessPlane(ax,tvec2,rotation_matrix2, 'm')
+    # coordinate(ax,tvec2,rotation_matrix2, 'O2')
+    # ChessPlane(ax,tvec3,rotation_matrix3, 'y')
+    # coordinate(ax,tvec3,rotation_matrix3, 'O3')
     ChessPlane(ax,tvec4,rotation_matrix4, 'g')
     coordinate(ax,tvec4,rotation_matrix4, 'O3')
     ChessPlane(ax,tvec5,rotation_matrix5, 'b')

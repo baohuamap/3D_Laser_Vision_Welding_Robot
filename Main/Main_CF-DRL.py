@@ -5,11 +5,12 @@ import numpy as np
 import threading
 import time, sys
 from GlobalVariables import *
+from stable_baselines3 import DQN
 
 # Welding_HomePos = [928, 19, -460, -180, 0, 0] # butt welding linear
 # Welding_HomePos = [1037, -16, -430, -135, 0, 0] # fillet welding 1
 # Welding_HomePos = [1037, 39, -430, 135, 0, 0] # fillet welding 2
-Welding_HomePos = [913, -50.5, -460, -180, 0, 0] # butt welding spline
+Welding_HomePos = [925, -50.5, -460, -180, 0, 0] # butt welding spline
 # Welding_HomePos = [924, -211, -450, -180, 0, 0] # butt welding zic zac
 
 class RobotTask(threading.Thread):
@@ -21,11 +22,12 @@ class RobotTask(threading.Thread):
         self.robot.StartRequest()
         CurrentPos = Welding_HomePos
 
+
     def pos2Movlcommand(self, pos):
         position = ""
         for i in pos:
             position += str(i) + ", "
-        command = "0, 20, 0, " + position + "0, 0, 0, 0, 0, 0, 0, 0"
+        command = "0, 5, 0, " + position + "0, 0, 0, 0, 0, 0, 0, 0"
         return command
 
     def pos2Movjcommand(self, pos):
@@ -56,11 +58,7 @@ class RobotTask(threading.Thread):
                     # print(distance)
             else:
                 pass
-        # command = self.pos2Movlcommand(position)
-        # reps = self.robot.MovL(command)
-        # if not "ERROR" in reps:
-        #     CurrentPos = self.robot.RposC()
-
+    
     def stop(self):
         global StopProcess, StartWelding
         self.robot.Stop()
@@ -120,22 +118,25 @@ class CameraTask(threading.Thread):
     
 class SoftwareTask(threading.Thread):
    def __init__(self):
-      threading.Thread.__init__(self)
-      self.vis = Vision()
-      self.intrinsic = self.vis.intrinsic
-      self.dist_coffs = self.vis.dist_coffs
-      self.eye2hand = self.vis.eye2hand
-      [self.a, self.b, self.c, self.d] = self.vis.plane
-      self.fx = self.intrinsic[0][0]
-      self.fy = self.intrinsic[1][1]
-      self.cx = self.intrinsic[0][2]
-      self.cy = self.intrinsic[1][2]
+        threading.Thread.__init__(self)
+        self.vis = Vision()
+        self.intrinsic = self.vis.intrinsic
+        self.dist_coffs = self.vis.dist_coffs
+        self.eye2hand = self.vis.eye2hand
+        [self.a, self.b, self.c, self.d] = self.vis.plane
+        self.fx = self.intrinsic[0][0]
+        self.fy = self.intrinsic[1][1]
+        self.cx = self.intrinsic[0][2]
+        self.cy = self.intrinsic[1][2]
+        model_path = 'D:/Code/Welding_Robot/DQN/models/DQN-CnnNet-1657646226/11730000.zip'
+        self.model = DQN.load(model_path, env=env)
+      
 
    def run(self):
         global ImgArr, NowPos, WeldPoint, StartWelding, CurrentPos, StopProcess
         # bounding box size
         w = 100  
-        h = 200
+        h = 100
         InitImg = ImgArr[0]
         # feature extraction
         pre = self.vis.Preprocessing(InitImg)
@@ -144,8 +145,8 @@ class SoftwareTask(threading.Thread):
         _, _, imgpos = self.vis.CD(center)
         # imgpos = [818, 771] # weld butt zic zac
         # imgpos = [835, 528] # weld butt
-        imgpos = [928, 575] # weld butt SPLINE
-        # imgpos = [925, 623] # weld fillet
+        imgpos = [936, 582] # weld butt SPLINE
+        # imgpos = [925, 623] # weld fillet 
         cv.circle(InitImg, (int(imgpos[0]),int(imgpos[1])), 5, 255, 5)
         cv.rectangle(InitImg,(int(imgpos[0] - w/2), int(imgpos[1] - h/2)), (int(imgpos[0] + w/2), int(imgpos[1] + h/2)) ,255, 2)
         # tracker initialization
@@ -189,8 +190,8 @@ class SoftwareTask(threading.Thread):
                     weldpoint2robot[0] = weldpoint2robot[0] - 5
                     weldpoint2robot[1] = weldpoint2robot[1] - 5
                     weldpoint2robot[2] = weldpoint2robot[2] - 5
-                    if weldpoint2robot[2] < -483:
-                        weldpoint2robot[2] = -483
+                    if weldpoint2robot[2] < -485:
+                        weldpoint2robot[2] = -485
                     WeldPoint.append(np.round(weldpoint2robot,3))
                     # print("distance: ", np.linalg.norm(WeldPoint[0][0] - CurrentPos[0]))
                     if np.linalg.norm(WeldPoint[0][0] - CurrentPos[0]) < 10:
