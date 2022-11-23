@@ -119,12 +119,20 @@ def save_laser_plane(mat):
 
 def laserCalibrate():
     tvec1, rotation_matrix1 = LaserPosition( laser_path + "checker_01.jpg", laser_path + "laser_01.jpg")
-    # tvec2, rotation_matrix2 = LaserPosition( laser_path + "checker_02.jpg", laser_path + "laser_02.jpg")
-    # tvec3, rotation_matrix3 = LaserPosition( laser_path + "checker_03.jpg", laser_path + "laser_03.jpg")
+    tvec2, rotation_matrix2 = LaserPosition( laser_path + "checker_02.jpg", laser_path + "laser_02.jpg")
+    tvec3, rotation_matrix3 = LaserPosition( laser_path + "checker_03.jpg", laser_path + "laser_03.jpg")
     tvec4, rotation_matrix4 = LaserPosition( laser_path + "checker_04.jpg", laser_path + "laser_04.jpg")
     tvec5, rotation_matrix5 = LaserPosition( laser_path + "checker_05.jpg", laser_path + "laser_05.jpg")
     tvec6, rotation_matrix6 = LaserPosition( laser_path + "checker_06.jpg", laser_path + "laser_06.jpg")
-
+    tvec7, rotation_matrix7 = LaserPosition( laser_path + "checker_07.jpg", laser_path + "laser_07.jpg")
+    tvec8, rotation_matrix8 = LaserPosition( laser_path + "checker_08.jpg", laser_path + "laser_08.jpg")
+    tvec9, rotation_matrix9 = LaserPosition( laser_path + "checker_09.jpg", laser_path + "laser_09.jpg")
+    tvec10, rotation_matrix10 = LaserPosition( laser_path + "checker_10.jpg", laser_path + "laser_10.jpg")
+    tvec11, rotation_matrix11 = LaserPosition( laser_path + "checker_11.jpg", laser_path + "laser_11.jpg")
+    tvec12, rotation_matrix12 = LaserPosition( laser_path + "checker_12.jpg", laser_path + "laser_12.jpg")
+    tvec13, rotation_matrix13 = LaserPosition( laser_path + "checker_13.jpg", laser_path + "laser_13.jpg")
+    tvec14, rotation_matrix14 = LaserPosition( laser_path + "checker_14.jpg", laser_path + "laser_14.jpg")
+    tvec15, rotation_matrix15 = LaserPosition( laser_path + "checker_15.jpg", laser_path + "laser_15.jpg")
     # Least Square Error Plane Fitting__________________________________________________
     x_square = 0
     xy = 0  
@@ -198,10 +206,10 @@ def laserCalibrate():
     ax.quiver(x, y, z, u, v, w, length=50, normalize=True)
     ChessPlane(ax,tvec1,rotation_matrix1, 'c')
     coordinate(ax,tvec1,rotation_matrix1, 'O1')
-    # ChessPlane(ax,tvec2,rotation_matrix2, 'm')
-    # coordinate(ax,tvec2,rotation_matrix2, 'O2')
-    # ChessPlane(ax,tvec3,rotation_matrix3, 'y')
-    # coordinate(ax,tvec3,rotation_matrix3, 'O3')
+    ChessPlane(ax,tvec2,rotation_matrix2, 'm')
+    coordinate(ax,tvec2,rotation_matrix2, 'O2')
+    ChessPlane(ax,tvec3,rotation_matrix3, 'y')
+    coordinate(ax,tvec3,rotation_matrix3, 'O3')
     ChessPlane(ax,tvec4,rotation_matrix4, 'g')
     coordinate(ax,tvec4,rotation_matrix4, 'O3')
     ChessPlane(ax,tvec5,rotation_matrix5, 'b')

@@ -70,10 +70,10 @@ class Vision():
         # grayimg = cv.cvtColor(img, cv.COLOR_BGR2GRAY)     # use when img is color image
         # blur = cv.GaussianBlur(grayimg,(7,7),0)
         blur = cv.GaussianBlur(img,(7,7),0)                 # use when img is gray image
-        _, thresh = cv.threshold(blur,100,255,cv.THRESH_BINARY)
+        _, thresh = cv.threshold(blur,150,255,cv.THRESH_BINARY)
         closing = thresh
         del blur
-        for _ in range(5):
+        for _ in range(7):
             closing = cv.morphologyEx(closing, cv.MORPH_CLOSE, np.ones((7,7),np.uint8))
         del thresh
         return closing
@@ -92,6 +92,10 @@ class Vision():
                     sum2 += img[y][x]
                 center[int(sum1/sum2)][x] = 255
         return center
+
+    def WeldseamCenter(self, img):
+        weldseam_center = np.zeros((self.rows,self.cols))
+        return weldseam_center
 
     def CrossLaser(self, img):
         colminval = self.rows/2

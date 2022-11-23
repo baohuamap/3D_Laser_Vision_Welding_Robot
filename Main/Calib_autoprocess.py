@@ -19,7 +19,7 @@ os.environ["PYLON_CAMEMU"] = "3"
 import time
 import socket
 
-# Params for NX100 controller **
+# Params for DX100 controller **
 DX100Address = "192.168.255.2"
 DX100tcpPort = 80
 CR = "\r"
@@ -28,8 +28,8 @@ CRLF = "\r\n"
 # global variables
 check_path = checkerboard_calib_cam_path
 laser_path = checkerboard_calib_laser_path
-# robot_path = calib_trajectory           # Open when calibrating
-robot_path = laser_calib_trajectory        # Open when calib laser
+robot_path = calib_trajectory           # Open when calibrating
+# robot_path = laser_calib_trajectory        # Open when calib laser
 R_path = R_path
 t_path = t_path
 
@@ -51,9 +51,9 @@ class BaslerCam():
         self.camera.OffsetX.SetValue(8)
         self.camera.OffsetY.SetValue(8)
         if self.LaserOn == True:
-            self.camera.ExposureTimeAbs = 4000
+            self.camera.ExposureTimeAbs = 10000
         else:
-            self.camera.ExposureTimeAbs = 40000 
+            self.camera.ExposureTimeAbs = 30000 
         self.camera.StartGrabbing()
         printed = False
 
@@ -314,7 +314,7 @@ if __name__ == "__main__":
             else:
                 filename = laser_path +"\checker_" + str(check_laser_count) +'.jpg'
             cv.imwrite(filename, img)
-            print('Captured laser image\nPair %d ' %(check_laser_count))
+            print('Captured checker laser image\nPair %d ' %(check_laser_count))
         elif choice & 0xFF == ord("b"):
             laser_count += 1
             # To start number with 0, e.g, 01 02 03 ... 09 10 11 12 ... 99
@@ -323,7 +323,7 @@ if __name__ == "__main__":
             else:
                 filename = laser_path +"\laser_" + str(laser_count) +'.jpg'
             cv.imwrite(filename, img)
-            print('Captured laser image\nPair %d ' %(laser_count))
+            print('Captured laser line image\nPair %d ' %(laser_count))
         elif choice & 0xFF == ord("q"):
             VisionSystem.stop()
             Robot.stop()

@@ -1,0 +1,29 @@
+{
+    "cSpell.words": [
+        "arange",
+        "Basler",
+        "calib",
+        "CAMEMU",
+        "CSRT",
+        "handeye",
+        "HOSTCTRL",
+        "imgpos",
+        "imwrite",
+        "laserplane",
+        "leng",
+        "linalg",
+        "MOVJ",
+        "Movjcommand",
+        "Movlcommand",
+        "mtrx",
+        "ransac",
+        "RPOSC",
+        "skimage",
+        "weldpoint",
+        "weldseam",
+        "ximgproc",
+        "Yaskawa",
+        "ZHANGSUEN"
+    ],
+    "python.analysis.typeCheckingMode": "off"
+}
