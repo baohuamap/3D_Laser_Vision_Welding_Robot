@@ -104,7 +104,7 @@ def calc_weldpoint2robot(point, pos):
 WeldPoints = []
 pos_no = 0
 
-Images = glob.glob('D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/MyCamera/Scan_data/weldseam_' + '*.jpg')
+Images = glob.glob('D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/MyCamera/Scan_data2/weldseam_' + '*.jpg')
 
 Images.sort(key=natural_keys)
 

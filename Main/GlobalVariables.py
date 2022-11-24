@@ -1,12 +1,13 @@
 # Images path
 checkerboard_calib_cam_path = 'D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/MyCamera/Checkerboard_calib_cam/'
 checkerboard_calib_laser_path = 'D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/MyCamera/Checkerboard_calib_laser/'
-scan_weld_seam_img_path = 'D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/MyCamera/Scan_data'
+scan_weld_seam_img_path = 'D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/MyCamera/Scan_data5'
 
 # Robot trajectory path
 calib_trajectory = 'D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/RobotTrajectory/calib_trajectory_1.txt'
 laser_calib_trajectory = 'D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/RobotTrajectory/laser_calib_trajectory.txt'
 welding_trajectory = 'D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/RobotTrajectory/welding_trajectory.txt'
+welding_trajectory_filtered = 'D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/RobotTrajectory/welding_trajectory_filtered.txt'
 scan_trajectory_path = "D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/RobotTrajectory/scan_trajectory.txt"
 
 # Camera parameters - xml and txt files
@@ -18,7 +19,7 @@ laserplane_params = 'D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Rob
 R_path = 'D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/XML_files/R.txt'
 t_path = 'D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/XML_files/t.txt'
 
-scan_pos_path = 'D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/MyCamera/Scan_data/Scan_pos.txt'
+scan_pos_path = 'D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/MyCamera/Scan_data5/Scan_pos.txt'
 
 # Format
 img_format = 'jpg'

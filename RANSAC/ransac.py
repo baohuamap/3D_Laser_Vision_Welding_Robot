@@ -74,7 +74,7 @@ def line_intersection(line1, line2):
 
 # print(line_intersection((A, B), (C, D)))
 
-image = cv.imread("D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/MyCamera/Scan_data8/weldseam_10.jpg", cv.IMREAD_GRAYSCALE)
+image = cv.imread("D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/MyCamera/Scan_data2/weldseam_10.jpg", cv.IMREAD_GRAYSCALE)
 img = Preprocessing(image)
 weldseam_center = WeldSeamCenter(img=image)
 # thinned         = cv.ximgproc.thinning(img, thinningType=cv.ximgproc.THINNING_ZHANGSUEN)

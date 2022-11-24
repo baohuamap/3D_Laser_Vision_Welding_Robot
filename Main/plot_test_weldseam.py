@@ -2,8 +2,8 @@ from matplotlib import pyplot as plt
 from GlobalVariables import *
 import numpy as np
 
-with open(welding_trajectory, 'r') as f:
-    positions = [[float(num) for num in line.split('\t')] for line in f]
+with open(welding_trajectory_filtered, 'r') as f:
+    positions = [[round(float(num),3) for num in line.split('\t')] for line in f]
 
 positions = np.array(positions)
 X = positions[:,0]

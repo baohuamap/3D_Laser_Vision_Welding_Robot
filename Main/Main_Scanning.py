@@ -171,7 +171,7 @@ class CameraTask(threading.Thread):
         self.camera.Height.SetValue(1200)
         self.camera.OffsetX.SetValue(8)
         self.camera.OffsetY.SetValue(8)
-        self.camera.ExposureTimeAbs = 10000 
+        self.camera.ExposureTimeAbs = 30000 
         self.camera.StartGrabbing(pylon.GrabStrategy_LatestImages) 
         
     def run(self):
@@ -198,41 +198,7 @@ class SoftwareTask(threading.Thread):
       self.cy = self.intrinsic[1][2]
 
    def run(self):
-        global ImgArr, NowPos, WeldPoints, StartWelding, CurrentPos, StopProcess
-        # InitImg = ImgArr[0]
-        # feature extraction
-        # pre = self.vis.Preprocessing(InitImg)
-        # thinned = cv.ximgproc.thinning(pre, thinningType=cv.ximgproc.THINNING_ZHANGSUEN)
-        # center = self.vis.LaserCenter(thinned)
-        # _, _, imgpos = self.vis.CD(center)
-
-        '''
-        RANSAC algorithm for image extraction
-        -> imgpos
-        
-        '''
-        imgpos = []
-
-
-        # calculate seam NowPos
-        Zc                 = -self.d / (self.a/self.fx*(imgpos[0]-self.cx) + self.b/self.fy*(imgpos[1] - self.cy) + self.c)
-        weldpoint2camera   = np.array([[Zc/self.fx*(imgpos[0]-self.cx)], [Zc/self.fy*(imgpos[1]-self.cy)], [Zc] , [1]])
-        tool2robot         = self.vis.homogeneous(NowPos[0])
-        weldpoint2robot    = tool2robot.dot(self.eye2hand).dot(weldpoint2camera).flatten()[0:3]
-        print(weldpoint2robot)
-        weldpoint2robot[0] = weldpoint2robot[0]
-        weldpoint2robot[1] = weldpoint2robot[1]
-        weldpoint2robot[2] = weldpoint2robot[2]
-        if weldpoint2robot[2] < -485:
-            weldpoint2robot[2] = -485
-        WeldPoints.append(np.round(weldpoint2robot,3))
-        del NowPos[0]
-        del ImgArr[0]
-        while not StopProcess:
-            try:
-                pass
-            except:
-                print("Software error: ", sys.exc_info())
+        pass
 
 ImgArr = []
 StartScanning = True
