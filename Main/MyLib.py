@@ -54,10 +54,7 @@ class Vision():
         self.intrinsic, self.dist_coffs = load_coefficients((camera_params))
         self.eye2hand = load_eye2hand((handeye_params))
         # coeffcients of laser plane: ax + by + cz + d = 0
-        # a = 3.4980491606939381
-        # b = 1.9111413571058655e-01
         c = -1
-        # d  = 1.5376725252934193e+02
         a, b, d = load_laserplane((laserplane_params))
         self.plane = [a,b,c,d]
         # adjust according to sensor size
@@ -364,7 +361,43 @@ class Yaskawa():
         
 
     def ArcOn(self):
-        pass 
+        #COMMAND request
+        ArcStart = 'ARCSTART'
+        commandLength = self.command_data_length(ArcStart)
+        commandRequest = "HOSTCTRL_REQUEST" + " " + "START" + " " + str(commandLength) + CRLF
+        self.client.send(commandRequest.encode())
+        time.sleep(0.01)
+        response = self.client.recv(4096)      #4096: buffer size
+        commandResponse = repr(response)
+        if ('OK: ' + "START" not in commandResponse):
+            print('[E] Command request response to DX100 is not successful!')
+            return
+        else:
+            #COMMAND DATA request
+            commandDataRequest = ArcStart + (CR if len(ArcStart) > 0 else '')
+            self.client.send(commandDataRequest.encode())
+            time.sleep(0.01)
+            response = self.client.recv(4096)
+            commandDataResponse = repr(response)
+        return commandDataResponse
 
     def ArcOff(self):
-        pass   
+        #COMMAND request
+        ArcStop = 'ARCSTOP'
+        commandLength = self.command_data_length(ArcStop)
+        commandRequest = "HOSTCTRL_REQUEST" + " " + "START" + " " + str(commandLength) + CRLF
+        self.client.send(commandRequest.encode())
+        time.sleep(0.01)
+        response = self.client.recv(4096)      #4096: buffer size
+        commandResponse = repr(response)
+        if ('OK: ' + "START" not in commandResponse):
+            print('[E] Command request response to DX100 is not successful!')
+            return
+        else:
+            #COMMAND DATA request
+            commandDataRequest = ArcStop + (CR if len(ArcStop) > 0 else '')
+            self.client.send(commandDataRequest.encode())
+            time.sleep(0.01)
+            response = self.client.recv(4096)
+            commandDataResponse = repr(response)
+        return commandDataResponse

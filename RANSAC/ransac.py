@@ -8,11 +8,10 @@ rows = 1200
 cols = 1700
 
 def WeldSeamCenter(img):
-    ROI = [1133, 1253]
     # adjust w to find the center of weldseam
     w = 5
     weldseam_center = []
-    for j in range(1025, 1105, 1):
+    for j in range(1084, 1184, 1):
     # for j in range(1165, 1225, 1):
         d = []
         for i in range(350, 800, 1):
@@ -74,7 +73,8 @@ def line_intersection(line1, line2):
 
 # print(line_intersection((A, B), (C, D)))
 
-image = cv.imread("D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/MyCamera/Scan_data2/weldseam_10.jpg", cv.IMREAD_GRAYSCALE)
+image = cv.imread("D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/MyCamera/Scan_data12/weldseam_69.jpg", cv.IMREAD_GRAYSCALE)
+# image = cv.imread("D:/Processing/Welding Robot Project/Photo/Test-RANSAC/img.jpg", cv.IMREAD_GRAYSCALE)
 img = Preprocessing(image)
 weldseam_center = WeldSeamCenter(img=image)
 # thinned         = cv.ximgproc.thinning(img, thinningType=cv.ximgproc.THINNING_ZHANGSUEN)
@@ -82,8 +82,6 @@ weldseam_center = WeldSeamCenter(img=image)
 # print(laser_center)
 
 
-for p in weldseam_center:
-    cv.circle(image, (int(p[0]),int(p[1])), 1, (255, 255, 255), 1)
 
 data = np.array(weldseam_center)
 # print(data)
@@ -93,7 +91,7 @@ model = LineModelND ()
 model_robust, inliers = ransac(data, LineModelND , min_samples=2,
                                residual_threshold=1, max_trials=1000)
 outliers = inliers == False
-line_x = [880, 1000]
+line_x = [1036, 1156]
 line_y_robust = model_robust.predict_y(line_x)
 
 # weldseam line
@@ -104,8 +102,8 @@ weldseam = (weldseam_point_1, weldseam_point_2)
 
 # laser center line
 # Laser center is the column ... of the image
-laser_center_1 = [1065, 900]
-laser_center_2 = [1065, 1200]
+laser_center_1 = [1134, 900]
+laser_center_2 = [1134, 1200]
 
 laser_centerline = (laser_center_1, laser_center_2)
 
@@ -113,12 +111,16 @@ laser_centerline = (laser_center_1, laser_center_2)
 feature_point = line_intersection(weldseam, laser_centerline)
 
 # ROI illustration
-image[:,1025] = 255
-image[:,1105] = 255
+image[:,1184] = 255
+image[:,1084] = 255
 
-# image[:,1165] = 255
-# image[:,1225] = 255
 frame = cv.cvtColor(image, cv.COLOR_GRAY2RGB)
+
+for p in weldseam_center:
+    cv.circle(frame, (int(p[0]),int(p[1])), 1, (0, 0, 255), 1)
+# laser ROI
+# image[:,1135] = 255
+# image[:,1095] = 255
 cv.circle(frame, (int(feature_point[0]),int(feature_point[1])), 5, (255, 0, 0), 5)
 frame = cv.resize(frame, (870,687), interpolation = cv.INTER_AREA)
 

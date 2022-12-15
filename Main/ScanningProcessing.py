@@ -38,7 +38,7 @@ def WeldSeamCenter(img):
     # adjust w to find the center of weldseam
     w = 5
     weldseam_center = []
-    for j in range(1025, 1105, 1):
+    for j in range(1084, 1184, 1):
         d = []
         for i in range(350, 800, 1):
             # if img[i][j] < 50:
@@ -104,7 +104,7 @@ def calc_weldpoint2robot(point, pos):
 WeldPoints = []
 pos_no = 0
 
-Images = glob.glob('D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/MyCamera/Scan_data2/weldseam_' + '*.jpg')
+Images = glob.glob('D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/MyCamera/Scan_data12/weldseam_' + '*.jpg')
 
 Images.sort(key=natural_keys)
 
@@ -121,7 +121,7 @@ for image in Images:
     model_robust, inliers = ransac(data, LineModelND , min_samples=2,
                                 residual_threshold=1, max_trials=1000)
     outliers = inliers == False
-    line_x = [880, 1000]
+    line_x = [1084, 1184]
     line_y_robust = model_robust.predict_y(line_x)
     # weldseam line
     weldseam_point_1 = [line_x[0], line_y_robust[0]]
@@ -129,29 +129,26 @@ for image in Images:
     weldseam = (weldseam_point_1, weldseam_point_2)
     # laser center line
     # Laser center is the column 910 of the image
-    laser_center_1 = [1065, 900]
-    laser_center_2 = [1065, 1200]
+    laser_center_1 = [1134, 900]
+    laser_center_2 = [1134, 1200]
     laser_centerline = (laser_center_1, laser_center_2)
     # find intersection
     feature_point = line_intersection(weldseam, laser_centerline)
     pos = positions[pos_no - 1]
     weldpoint2robot = calc_weldpoint2robot(feature_point, pos)
-    weldpoint2robot[2] = -490
+    weldpoint2robot[2] = -35
     print(weldpoint2robot)
     pos_no += 1
     WeldPoints.append(weldpoint2robot)
     # show img 
     for p in weldseam_center:
         cv.circle(img, (int(p[0]),int(p[1])), 1, (255, 255, 255), 1)
-    img[:,1025] = 255
-    img[:,1105] = 255
+    img[:,1084] = 255
+    img[:,1184] = 255
 
     frame = cv.cvtColor(img, cv.COLOR_GRAY2RGB)
     cv.circle(frame, (int(feature_point[0]),int(feature_point[1])), 5, (255, 0, 0), 5)
     frame = cv.resize(frame, (870,687), interpolation = cv.INTER_AREA)
-    # cv.namedWindow("img", cv.WINDOW_AUTOSIZE)
-    # cv.imshow("img", frame)
-    # cv.waitKey()
     img_name = 'D:/Workspace/Code/Welding_Robot/3D_Laser_Vision_Welding_Robot/log/Scanning_processing_log/' + str(pos_no) + '.jpg'
     cv.imwrite(img_name, frame)    
 

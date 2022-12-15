@@ -51,9 +51,9 @@ class BaslerCam():
         self.camera.OffsetX.SetValue(8)
         self.camera.OffsetY.SetValue(8)
         if self.LaserOn == True:
-            self.camera.ExposureTimeAbs = 10000
+            self.camera.ExposureTimeAbs = 5000
         else:
-            self.camera.ExposureTimeAbs = 30000 
+            self.camera.ExposureTimeAbs = 10000 
         self.camera.StartGrabbing()
         printed = False
 

@@ -7,11 +7,7 @@ import time, sys
 from GlobalVariables import *
 
 # --- Choose the Welding_HomePos ---
-# Welding_HomePos = [928, 19, -460, -180, 0, 0] # butt welding linear
-# Welding_HomePos = [1037, -16, -430, -135, 0, 0] # fillet welding 1
-# Welding_HomePos = [1037, 39, -430, 135, 0, 0] # fillet welding 2
-Welding_HomePos = [910, -50.5, -460, -180, 0, 0] # butt welding spline
-# Welding_HomePos = [924, -211, -450, -180, 0, 0] # butt welding zic zac
+Welding_HomePos = [666, -30, 20, 180, -25, 0] # butt welding spline
 
 class RobotTask(threading.Thread):
     def __init__(self):
@@ -26,14 +22,14 @@ class RobotTask(threading.Thread):
         position = ""
         for i in pos:
             position += str(i) + ", "
-        command = "0, 5, 0, " + position + "0, 0, 0, 0, 0, 0, 0, 0"
+        command = "0, 20, 0, " + position + "0, 0, 0, 0, 0, 0, 0, 0"
         return command
 
     def pos2Movjcommand(self, pos):
         position = ""
         for i in pos:
             position += str(i) + ", "
-        command = "8, 0, " + position + "0, 0, 0, 0, 0, 0, 0, 0"
+        command = "10, 0, " + position + "0, 0, 0, 0, 0, 0, 0, 0"
         return command
 
     def homing(self):
@@ -54,13 +50,8 @@ class RobotTask(threading.Thread):
                     time.sleep(0.01)
                     CurrentPos = self.robot.RposC()
                     distance = np.linalg.norm(position[0:3] - CurrentPos[0:3])
-                    # print(distance)
             else:
                 pass
-        # command = self.pos2Movlcommand(position)
-        # reps = self.robot.MovL(command)
-        # if not "ERROR" in reps:
-        #     CurrentPos = self.robot.RposC()
 
     def stop(self):
         global StopProcess, StartWelding
@@ -95,8 +86,6 @@ class RobotTask(threading.Thread):
             except:
                 print("Robot error: ", sys.exc_info())
                 pass
-            # finally:
-                # pass
 
 class CameraTask(threading.Thread):
     def __init__(self):
@@ -144,10 +133,7 @@ class SoftwareTask(threading.Thread):
         thinned = cv.ximgproc.thinning(pre, thinningType=cv.ximgproc.THINNING_ZHANGSUEN)
         center = self.vis.LaserCenter(thinned)
         _, _, imgpos = self.vis.CD(center)
-        # imgpos = [818, 771] # weld butt zic zac
-        # imgpos = [835, 528] # weld butt
-        imgpos = [918,638] # weld butt SPLINE
-        # imgpos = [925, 623] # weld fillet
+        imgpos = [1089,606] # weld butt SPLINE
         cv.circle(InitImg, (int(imgpos[0]),int(imgpos[1])), 5, 255, 5)
         cv.rectangle(InitImg,(int(imgpos[0] - w/2), int(imgpos[1] - h/2)), (int(imgpos[0] + w/2), int(imgpos[1] + h/2)) ,255, 2)
         # tracker initialization
@@ -160,11 +146,9 @@ class SoftwareTask(threading.Thread):
         tool2robot         = self.vis.homogeneous( NowPos[0])
         weldpoint2robot    = tool2robot.dot(self.eye2hand).dot(weldpoint2camera).flatten()[0:3]
         print(weldpoint2robot)
-        weldpoint2robot[0] = weldpoint2robot[0] 
-        weldpoint2robot[1] = weldpoint2robot[1] - 15
-        weldpoint2robot[2] = weldpoint2robot[2] - 5
-        if weldpoint2robot[2] < -485:
-            weldpoint2robot[2] = -485
+        weldpoint2robot[0] += 9
+        weldpoint2robot[1] -= 15
+        weldpoint2robot[2] = -35
         WeldPoint.append(np.round(weldpoint2robot,3))
         del NowPos[0]
         del ImgArr[0]
@@ -188,17 +172,13 @@ class SoftwareTask(threading.Thread):
                     tool2robot         = self.vis.homogeneous(NowPos[0])
                     weldpoint2robot    = tool2robot.dot(self.eye2hand).dot(weldpoint2camera).flatten()[0:3]
                     print(weldpoint2robot)
-                    weldpoint2robot[0] = weldpoint2robot[0]
-                    weldpoint2robot[1] = weldpoint2robot[1] - 15
-                    weldpoint2robot[2] = weldpoint2robot[2] - 5
-                    if weldpoint2robot[2] < -485:
-                        weldpoint2robot[2] = -485
+                    weldpoint2robot[0] += 9
+                    weldpoint2robot[1] -= 15
+                    weldpoint2robot[2] = - 35
                     WeldPoint.append(np.round(weldpoint2robot,3))
                     # print("distance: ", np.linalg.norm(WeldPoint[0][0] - CurrentPos[0]))
                     if np.linalg.norm(WeldPoint[0][0] - CurrentPos[0]) < 10:
                         StartWelding = True
-                        # print("start true")
-                    # print("WeldPoint LEN: ", len(WeldPoint))
                     del NowPos[0]
                     del ImgArr[0]
                     img = cv.resize(img, (960, 520), interpolation = cv.INTER_AREA)
@@ -206,8 +186,6 @@ class SoftwareTask(threading.Thread):
                     cv.waitKey(1)
             except:
                 print("Software error: ", sys.exc_info())
-            # finally:
-                # print("leng:", len(NowPos), len(ImgArr))
 
 ImgArr = []
 StartWelding = False
@@ -215,17 +193,19 @@ WeldDone = False
 NowPos = []
 WeldPoint = []
 
-camera   = CameraTask()
-robot    = RobotTask()
-software = SoftwareTask()
 
-print("--- Homing process ---")
-robot.homing()
-time.sleep(5)
-print("--- Homing process done ---")
-print("--- Start welding ---")
- 
-# Start new Threads
-camera.start()
-robot.start()
-software.start()
+if __name__ == "__main__":
+    camera   = CameraTask()
+    robot    = RobotTask()
+    software = SoftwareTask()
+
+    print("--- Homing process ---")
+    robot.homing()
+    time.sleep(5)
+    print("--- Homing process done ---")
+    print("--- Start welding ---")
+    
+    # Start new Threads
+    camera.start()
+    robot.start()
+    software.start()

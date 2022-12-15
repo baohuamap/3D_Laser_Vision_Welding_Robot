@@ -133,6 +133,8 @@ def laserCalibrate():
     tvec13, rotation_matrix13 = LaserPosition( laser_path + "checker_13.jpg", laser_path + "laser_13.jpg")
     tvec14, rotation_matrix14 = LaserPosition( laser_path + "checker_14.jpg", laser_path + "laser_14.jpg")
     tvec15, rotation_matrix15 = LaserPosition( laser_path + "checker_15.jpg", laser_path + "laser_15.jpg")
+    tvec16, rotation_matrix16 = LaserPosition( laser_path + "checker_16.jpg", laser_path + "laser_16.jpg")
+
     # Least Square Error Plane Fitting__________________________________________________
     x_square = 0
     xy = 0  
